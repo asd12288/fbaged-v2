@@ -7,7 +7,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import GridBox from "../../ui/GridBox";
+import GridBox from "../../../ui/GridBox";
 
 const data = [
   { name: "Action DASSAULT", cpr: 29.98 },
@@ -19,8 +19,8 @@ function CampaignLineChart() {
   return (
     <GridBox>
       <text x="50%" y="15" textAnchor="middle" fontSize="1.6rem">
-            Deposits over time
-          </text>
+        Deposits over time
+      </text>
       <LineChart
         width={600}
         height={300}

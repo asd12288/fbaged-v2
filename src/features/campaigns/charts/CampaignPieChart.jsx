@@ -1,7 +1,10 @@
 import { PieChart, Pie, Tooltip, Cell, Legend } from "recharts";
-import GridBox from "../../ui/GridBox";
-import Heading from "../../ui/Heading";
-import { GridLayoutRight } from "../../ui/GridLayout2";
+import GridBox from "../../../ui/GridBox";
+import styled from "styled-components";
+
+const GridLayout = styled.div`
+  grid-column: 3 / span 2;
+`;
 
 const data = [
   { name: "Action DASSAULT", dailyBudget: 500 },
@@ -11,11 +14,10 @@ const data = [
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
-function RemainingPieChart() {
+function CampaignPieChart() {
   return (
-    <GridLayoutRight>
+    <GridLayout>
       <GridBox>
-        <Heading as="h2">Remaining Money</Heading>
         <text x="50%" y="15" textAnchor="middle" fontSize="1.6rem">
           Deposits over time
         </text>
@@ -40,8 +42,8 @@ function RemainingPieChart() {
           <Legend />
         </PieChart>
       </GridBox>
-    </GridLayoutRight>
+    </GridLayout>
   );
 }
 
-export default RemainingPieChart;
+export default CampaignPieChart;

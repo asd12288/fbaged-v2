@@ -9,7 +9,7 @@ import { useSearchParams } from "react-router";
 
 const StyledBudgetLayout = styled.div`
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: 500px;
   gap: 1.2rem;
 `;
@@ -19,8 +19,8 @@ function BudgetLayout() {
   return (
     <>
       <StyledBudgetLayout>
-        <DepositList />
         <DepositChart />
+        <DepositList />
       </StyledBudgetLayout>
       <Row>
         <Heading>Expenses overview</Heading>

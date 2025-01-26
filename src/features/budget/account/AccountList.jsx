@@ -12,7 +12,7 @@ function AccountList() {
   return (
     <GridLayoutLeft>
       <GridBox>
-        <Heading as="h2">My Active Campaigns</Heading>
+        <Heading as="h2">My Accounts</Heading>
         <Table columns="2.5fr 1.5fr 1fr 1fr 2rem" type="compact">
           <Table.Header>
             <div>Account Name</div>

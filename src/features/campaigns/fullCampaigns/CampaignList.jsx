@@ -1,7 +1,7 @@
-import { useCampaigns } from "./useCampaigns";
-import Table from "../../ui/Table";
+import { useCampaigns } from "../useCampaigns";
+import Table from "../../../ui/Table";
 import CampaignRow from "./CampaignRow";
-import Tooltip from "../../ui/Tooltip";
+import Tooltip from "../../../ui/Tooltip";
 
 function CampaignList() {
   const { isPending, data: campaigns } = useCampaigns();

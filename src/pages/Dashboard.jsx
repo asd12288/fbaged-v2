@@ -8,6 +8,7 @@ function Dashboard() {
       <Row>
         <Heading>Dashboard</Heading>
         <p>The data resfrash every 8 hours</p>
+        
       </Row>
       <DashboardLayout />
     </>

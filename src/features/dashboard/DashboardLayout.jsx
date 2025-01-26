@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import Stats from "./Stats";
-import AccountList from "../budget/account/AccountList";
-import RemainingPieChart from "./RemainingPieChart";
+import BalanceCard from "../budget/balance/BalanceCard";
+import CampaignsPerformence from "../campaigns/charts/CampaignsChartPerformence";
+import ActiveCampaignsList from "../campaigns/activeCampaignsTable/ActiveCampaignsList";
 
 const StyledDashboardLayout = styled.div`
   display: grid;
@@ -12,11 +13,15 @@ const StyledDashboardLayout = styled.div`
 
 function DashboardLayout() {
   return (
-    <StyledDashboardLayout>
-      <Stats />
-      <AccountList />
-      <RemainingPieChart />
-    </StyledDashboardLayout>
+    <>
+      <StyledDashboardLayout>
+        <Stats />
+
+        <BalanceCard />
+        <CampaignsPerformence />
+      </StyledDashboardLayout>
+      <ActiveCampaignsList />
+    </>
   );
 }
 

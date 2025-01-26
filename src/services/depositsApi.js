@@ -8,3 +8,29 @@ export async function getDeposits() {
   }
   return data;
 }
+
+export async function createDeposit(deposit) {
+  const { data, error } = await supabase.from("deposits").insert([deposit]);
+  if (error) {
+    console.log("depositsApi.js: createDeposit error", error.message);
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function updateDeposit(id, updatedDeposit) {
+  const { data, error } = await supabase
+    .from("deposits")
+    .update(updatedDeposit)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteDeposit(id) {
+  const { data, error } = await supabase.from("deposits").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  return data;
+}

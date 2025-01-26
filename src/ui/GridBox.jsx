@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 const GridBox = styled.div`
   background-color: var(--color-grey-0);
@@ -6,6 +6,11 @@ const GridBox = styled.div`
   border-radius: var(--border-radius-md);
   padding: 2.5rem;
 
+  ${(props) =>
+    props.size === "small" &&
+    css`
+      padding-top: 1rem;
+    `}
 
   display: flex;
   flex-direction: column;

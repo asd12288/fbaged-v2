@@ -3,8 +3,17 @@ import DepositRow from "./DepositRow";
 import { useDeposits } from "../useDeposits";
 import styled from "styled-components";
 import { useSearchParams } from "react-router";
+import Heading from "../../../ui/Heading";
+import GridBox from "../../../ui/GridBox";
 
 const StyledDepositList = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  padding:2.4rem;
+  border-radius: var(--border-radius-md);
+
+  /* grid-area: 1 / span 2; */
   overflow: auto; /* Allows scrolling */
   scrollbar-width: none; /* Hides scrollbar in Firefox */
   -ms-overflow-style: none; /* Hides scrollbar in IE and Edge */
@@ -59,7 +68,8 @@ function DepositList() {
 
   return (
     <StyledDepositList>
-      <Table columns="1fr 1fr 1fr 1rem">
+      <Heading as="h2">Lateset Deposits</Heading>
+      <Table columns="1fr 1fr 1fr 1.1rem" type="center">
         <Table.Header>
           <div>deposit</div>
           <div>Type</div>

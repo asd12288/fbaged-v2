@@ -23,6 +23,12 @@ const StyledTable = styled.table`
       overflow-x: auto;
       padding: 0.4rem;
     `}
+
+    ${(props) =>
+    props.type === "center" &&
+    css`
+      text-align: center;
+    `}
 `;
 
 // Also reduce CommonRow gaps for more compact columns
@@ -54,6 +60,12 @@ const StyledHeader = styled(CommonRow)`
       gap: 0.8rem;
       padding: 1.5rem 2.8rem;
     `}
+
+  ${(props) =>
+    props.type === "center" &&
+    css`
+      text-align: center;
+    `}
 `;
 
 const StyledRow = styled(CommonRow)`
@@ -67,6 +79,12 @@ const StyledRow = styled(CommonRow)`
       letter-spacing: 0.4px;
     `}
 
+  ${(props) =>
+    props.type === "center" &&
+    css`
+      text-align: center;
+    `}
+
   &:not(:last-child) {
     border-bottom: 1px solid var(--color-grey-100);
   }
@@ -74,6 +92,12 @@ const StyledRow = styled(CommonRow)`
 
 const StyledBody = styled.section`
   margin: 0.4rem 0;
+
+  ${(props) =>
+    props.type === "center" &&
+    css`
+      text-align: center;
+    `}
 `;
 
 const StyledFooter = styled.footer`
@@ -121,7 +145,7 @@ function Row({ children, type = "regular" }) {
   );
 }
 
-function Body({ data, render }) {
+function Body({ data, render, type = "regular" }) {
   if (!data.length) return <Empty>Empty</Empty>;
 
   return <StyledBody>{data.map(render)}</StyledBody>;

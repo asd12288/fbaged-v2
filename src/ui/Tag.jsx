@@ -16,13 +16,20 @@ const Tag = styled.div`
   ${(props) =>
     props.variant === "Paused" &&
     css`
-      background-color: var(--color-red-700);
+      background-color: var(--color-yellow-700);
     `}
 
   ${(props) =>
     props.variant === "Learning" &&
     css`
-      background-color: var(--color-grey-700);
+      background-color: var(--color-indigo-700);
+    `}
+
+    
+  ${(props) =>
+    props.variant === "Inactive" &&
+    css`
+      background-color: var(--color-red-700);
     `}
 
   ${(props) =>

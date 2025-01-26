@@ -12,7 +12,7 @@ import GridBox from "../../../ui/GridBox";
 import { useDeposits } from "../useDeposits";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router";
-import { de } from "date-fns/locale";
+
 
 function DepositChart() {
   const { isPending, data: deposits } = useDeposits();
@@ -59,29 +59,29 @@ function DepositChart() {
   });
 
   return (
-    <GridBox>
-      <ResponsiveContainer>
-        <BarChart
-          width={600}
-          height={400}
-          data={sortedDeposits}
-          margin={{ top: 30, right: 30, left: 20, bottom: 20 }}
-        >
-          <text x="50%" y="15" textAnchor="middle" fontSize="1.6rem">
-            Deposits over time
-          </text>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="dateAdded"
-            tickFormatter={(date) => format(new Date(date), "MMM dd")}
-          />
-          <YAxis tickFormatter={(value) => `$${value}`} dataKey="amount" />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="amount" fill="#059669" name="Deposit Amount" />
-        </BarChart>
-      </ResponsiveContainer>
-    </GridBox>
+      <GridBox>
+        <ResponsiveContainer>
+          <BarChart
+            width={600}
+            height={400}
+            data={sortedDeposits}
+            margin={{ top: 30, right: 30, left: 20, bottom: 20 }}
+          >
+            <text x="50%" y="15" textAnchor="middle" fontSize="1.6rem">
+              Deposits over time
+            </text>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="dateAdded"
+              tickFormatter={(date) => format(new Date(date), "MMM dd")}
+            />
+            <YAxis tickFormatter={(value) => `$${value}`} dataKey="amount" />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="amount" fill="#059669" name="Deposit Amount" />
+          </BarChart>
+        </ResponsiveContainer>
+      </GridBox>
   );
 }
 

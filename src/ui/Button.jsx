@@ -17,6 +17,14 @@ const variation = {
       background-color: var(--color-brand-700);
     }
   `,
+  secondary: css`
+    color: var(--color-grey-0);
+    background-color: var(--color-grey-500);
+
+    &:hover {
+      background-color: var(--color-grey-700);
+    }
+  `,
 };
 
 const Button = styled.button`

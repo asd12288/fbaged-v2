@@ -1,7 +1,7 @@
 import { HiOutlineZoomIn } from "react-icons/hi";
-import Table from "../../ui/Table";
-import Tag from "../../ui/Tag";
-import { formatCurrency } from "../../utils/helpers";
+import Table from "../../../ui/Table";
+import Tag from "../../../ui/Tag";
+import { formatCurrency } from "../../../utils/helpers";
 import styled from "styled-components";
 import { useState } from "react";
 
@@ -61,8 +61,8 @@ function CampaignRow({
       <div>{impressions}</div>
       <div>{linkClicks}</div>
       <div>{cpm}</div>
-      <div>{cpc}</div>
-      <div>{ctr}</div>
+      <div>{formatCurrency(cpc)}</div>
+      <div>{ctr}%</div>
       <div>{clicks}</div>
       <div>{formatCurrency(costPerResults)}</div>
       <div>{formatCurrency(amountSpent)}</div>
@@ -78,7 +78,9 @@ function CampaignRow({
         <HiOutlineZoomIn />
 
         {/* Conditionally render image with a fade effect */}
-        {isHovered && <Img src={image} alt="Campaign preview" isVisible={isHovered} />}
+        {isHovered && (
+          <Img src={image} alt="Campaign preview" isVisible={isHovered} />
+        )}
       </div>
     </Table.Row>
   );

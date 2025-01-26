@@ -1,11 +1,15 @@
-import Heading from "../ui/Heading"
+import Heading from "../ui/Heading";
+import CampaignsAdminLayout from "../features/admin/CampaignsAdminLayout";
+import BudgetAdminLayout from "../features/admin/BudgetAdminLayout";
 
 function AdminDashboard() {
-    return (
-        <Heading>
-            admin dashboard
-        </Heading>
-    )
+  return (
+    <>
+      <Heading>Admin dashboard</Heading>
+      <CampaignsAdminLayout />
+      <BudgetAdminLayout />
+    </>
+  );
 }
 
-export default AdminDashboard
+export default AdminDashboard;

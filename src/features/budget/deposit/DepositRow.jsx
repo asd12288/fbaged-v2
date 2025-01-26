@@ -23,12 +23,16 @@ const Stacked = styled.div`
   }
 `;
 
+const DateDiv = styled.div`
+  font-size: 1.2rem;
+`;
+
 function DepositRow({ deposit: { amount, dateAdded, type } }) {
   return (
     <Table.Row>
       <div>{formatCurrency(amount)}</div>
       <Tag variant={type}>{type}</Tag>
-      <div>{dateAdded}</div>
+      <DateDiv>{dateAdded}</DateDiv>
     </Table.Row>
   );
 }
