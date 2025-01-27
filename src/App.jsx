@@ -39,7 +39,7 @@ function AppContent() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate replace to="login" />} />
+          <Route index element={<Navigate replace to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="campaigns" element={<Campagins />} />
           <Route path="budget" element={<Budget />} />
