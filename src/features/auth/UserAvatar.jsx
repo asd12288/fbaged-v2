@@ -17,7 +17,8 @@ const UserAvatarImg = styled.img`
 `;
 
 function UserAvatar() {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
+  if(isLoading) return null;
   return (
     <StyledUserAvatar>
       <span>Welcome back {user.username} </span>

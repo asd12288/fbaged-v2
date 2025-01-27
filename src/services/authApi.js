@@ -28,7 +28,8 @@ export async function getCurrentUser() {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error(userError?.message || "No user found");
+    console.error(userError?.message || "No user found");
+    return null;
   }
 
   // Fetch the user's profile to get additional details like 'role' and 'username'
@@ -39,7 +40,8 @@ export async function getCurrentUser() {
     .single();
 
   if (profileError) {
-    throw new Error(profileError.message);
+    console.log("Error fetching user profile:", profileError);
+    return null;
   }
 
   return { ...user, role: profile.role, username: profile.username };
