@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import LoginForm from "./LoginForm";
+import LoginForm from "../features/auth/LoginForm";
 
 const StyledMaintenceMode = styled.div`
   display: flex;
