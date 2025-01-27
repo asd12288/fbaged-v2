@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import LoginForm from "../features/auth/LoginForm";
+import { Link } from "react-router";
 
 const StyledMaintenceMode = styled.div`
   display: flex;
@@ -20,6 +21,12 @@ const StlyedImageMaintence = styled.img`
   height: 200px;
 `;
 
+const StyledLink = styled(Link)`
+  color: #0077cc;
+  text-decoration: none;
+  font-weight: bold;
+`;
+
 function MaintenancePage() {
   return (
     <StyledMaintenceMode>
@@ -27,6 +34,7 @@ function MaintenancePage() {
         We&apos;re currently under maintence, retry again later{" "}
       </StyledMessageMaintence>
       <StlyedImageMaintence src="/logo.png" alt="Under maintence" />
+      <StyledLink to="/login">Go back to the homepage</StyledLink>
     </StyledMaintenceMode>
   );
 }

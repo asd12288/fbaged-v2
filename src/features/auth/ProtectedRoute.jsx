@@ -8,9 +8,7 @@ function ProtectedRoute({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("[ProtectedRoute] user:", user);
     if (!isLoading && !user) {
-      console.log("[ProtectedRoute] No user found, redirecting to login");
       navigate("/login");
     }
   }, [user, isLoading, navigate]);

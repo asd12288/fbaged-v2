@@ -12,7 +12,6 @@ export function useUser() {
     retry: false, // Optional: Prevent retrying on failure
   });
 
-  console.log("User data in useUser hook:", user);
 
   return {
     user,
