@@ -11,8 +11,7 @@ import { formatCurrency } from "../../utils/helpers";
 function Stats() {
   const { isPending, data: campaigns } = useCampaigns();
 
-  if (isPending) return <div>Loading...</div>;
-
+  if (isPending) return null;
   const acitveCampaigns = campaigns.filter(
     (campaign) => campaign.status === "Active"
   ).length;

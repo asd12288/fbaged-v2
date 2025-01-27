@@ -14,6 +14,7 @@ export default function useAddAccount() {
     },
     onError: (error) => {
       console.error(error);
+      toast.error("An error occurred while adding the account");
     },
   });
   return { addAccount, isAdding };

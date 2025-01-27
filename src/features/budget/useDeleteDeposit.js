@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteDeposit } from "../../services/depositsApi";
+import toast from "react-hot-toast";
 
 export function useDeleteDeposit() {
   const queryClient = useQueryClient();
@@ -9,9 +10,11 @@ export function useDeleteDeposit() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["deposits"]);
+      toast.success("Deposit deleted successfully");
     },
     onError: (error) => {
       console.error(error);
+      toast.error("An error occurred while deleting the deposit");
     },
   });
 

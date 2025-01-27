@@ -22,7 +22,7 @@ const StyledLink = styled(Link)`
 function ActiveCampaigns() {
   const { isPending, data: campaigns } = useCampaigns();
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return null;
   const activeCampaigns = campaigns.filter(
     (campaign) => campaign.status === "Active"
   );

@@ -20,9 +20,7 @@ import { useCampaigns } from "../useCampaigns";
 const CampaignsPerforemenceAll = () => {
   const { data, isPending } = useCampaigns();
 
-  return isPending ? (
-    <div>loading...</div>
-  ) : (
+  return isPending ? null : (
     <GridBox>
       <div style={{ width: "100%", height: 500 }}>
         <ResponsiveContainer>

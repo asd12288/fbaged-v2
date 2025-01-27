@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateAccount } from "../../services/accountsApi";
+import toast from "react-hot-toast";
 
 export default function useEditAccount() {
   const queryClient = useQueryClient();
@@ -9,9 +10,11 @@ export default function useEditAccount() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["accounts"]);
+      toast.success("Account updated successfully");
     },
     onError: (error) => {
       console.error(error);
+      toast.error("An error occurred while updating the account");
     },
   });
   return { editAccount, isEditing };

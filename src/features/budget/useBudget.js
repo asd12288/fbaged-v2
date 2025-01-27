@@ -10,7 +10,7 @@ export function useBudget() {
   const { data: campaigns, isPending: campaignsPending } = useCampaigns();
   const { data: accounts, isPending: accountPending } = useAccounts();
 
-    
+  const isPending = depositPending || campaignsPending || accountPending;
 
   const totalAmounts = deposits?.reduce(
     (cur, deposit) => cur + deposit.amount,
@@ -57,8 +57,6 @@ export function useBudget() {
     maintenceFees,
     totalDailyBudget,
     daysLeft,
-    accountPending,
-    depositPending,
-    campaignsPending,
+    isPending,
   };
 }

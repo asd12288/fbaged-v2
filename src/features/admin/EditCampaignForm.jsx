@@ -10,6 +10,7 @@ import { useCampaign } from "../campaigns/useCampaign";
 import Button from "../../ui/Button";
 import { useEditCampaign } from "../campaigns/useEditCampaign";
 import SpinnerMini from "../../ui/SpinnerMini";
+import toast from "react-hot-toast";
 
 // ----------------- STYLED COMPONENTS -----------------
 const FormContainer = styled.form`
@@ -90,12 +91,15 @@ function EditCampaignForm() {
           : 0,
     };
 
-    console.log("Submitting:", finalData);
-    // Add your submission (API call, etc.) here
     const image = typeof data.image === "string" ? data.image : data.image[0];
     editCampaign(
       { newCampaign: { ...data, image }, id: campaign.id },
-      { onSuccess: () => reset() }
+      {
+        onSuccess: () => {
+          reset();
+          toast.success("Campaign updated successfully");
+        },
+      }
     );
   };
 
@@ -165,13 +169,12 @@ function EditCampaignForm() {
             {campaign?.image && (
               <img
                 src={campaign.image}
-               
                 style={{ width: "200px", marginTop: "1rem" }}
               />
             )}
           </FormRowVertical>
 
-          <Button type="submit" >
+          <Button type="submit">
             {isEditing ? <SpinnerMini /> : "Submit"}
           </Button>
         </Column>

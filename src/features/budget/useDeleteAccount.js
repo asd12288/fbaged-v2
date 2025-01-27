@@ -14,6 +14,7 @@ export default function useDeleteAccount() {
     },
     onError: (error) => {
       console.error(error);
+      toast.error("An error occurred while deleting the account");
     },
   });
 

@@ -2,11 +2,12 @@ import { useCampaigns } from "../useCampaigns";
 import Table from "../../../ui/Table";
 import CampaignRow from "./CampaignRow";
 import Tooltip from "../../../ui/Tooltip";
+import Spinner from "../../../ui/Spinner";
 
 function CampaignList() {
   const { isPending, data: campaigns } = useCampaigns();
 
-  if (isPending) return <div>Loading...</div>;
+  if (isPending) return <Spinner />;
 
   return (
     <>

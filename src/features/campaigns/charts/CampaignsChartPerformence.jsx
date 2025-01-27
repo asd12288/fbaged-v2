@@ -4,6 +4,7 @@ import Heading from "../../../ui/Heading";
 import { useCampaigns } from "../useCampaigns";
 import { useState } from "react";
 import styled from "styled-components";
+import Spinner from "../../../ui/Spinner";
 
 const COLORS = ["#0369a1", "#059669", "#FFBB28"];
 
@@ -87,12 +88,10 @@ const renderActiveShape = (props) => {
 };
 
 function CampaignsPerformence() {
-  const { data: campaigns } = useCampaigns();
+  const { data: campaigns, isPending } = useCampaigns();
   const [activeIndex, setActiveIndex] = useState(0);
 
-  if (!campaigns) {
-    return <div>Loading...</div>;
-  }
+  if (isPending) return null;
 
   const activeCampaings = campaigns.filter(
     (campaign) => campaign.status === "Active"

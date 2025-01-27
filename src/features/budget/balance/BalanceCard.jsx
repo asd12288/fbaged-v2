@@ -59,14 +59,11 @@ function BalanceCard() {
     daysLeft,
     maintenceFees,
     totalDailyBudget,
-    accountPending,
-    depositPending,
-    campaignsPending,
+
+    isPending,
   } = useBudget();
 
-  if (accountPending || depositPending || campaignsPending) {
-    return <Spinner />;
-  }
+  if (isPending) return null;
 
   return (
     <StyledBalanceCard>
