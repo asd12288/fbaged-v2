@@ -4,8 +4,7 @@ import ExpensesOverview from "./expenses/ExpensesOverview";
 import Row from "../../ui/Row";
 import DepositChart from "./deposit/DepositChart";
 import Heading from "../../ui/Heading";
-import { useDeposits } from "./useDeposits";
-import { useSearchParams } from "react-router";
+import AccountList from "./account/AccountList";
 
 const StyledBudgetLayout = styled.div`
   display: grid;
@@ -15,7 +14,6 @@ const StyledBudgetLayout = styled.div`
 `;
 
 function BudgetLayout() {
-  
   return (
     <>
       <StyledBudgetLayout>
@@ -23,10 +21,12 @@ function BudgetLayout() {
         <DepositList />
       </StyledBudgetLayout>
       <Row>
-        <Heading>Expenses overview</Heading>
+        <Heading as="h2">Expenses overview</Heading>
         <Heading as="h2">as for {new Date().toLocaleDateString()}</Heading>
       </Row>
       <ExpensesOverview />
+      <Heading as="h2">Accounts</Heading>
+      <AccountList />
     </>
   );
 }

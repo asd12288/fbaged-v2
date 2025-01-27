@@ -13,11 +13,6 @@ function HeaderMenu() {
   return (
     <StyledHeaderMenu>
       <li>
-        <ButtonIcon onClick={() => console.log("click")}>
-          <HiOutlineUser />
-        </ButtonIcon>
-      </li>
-      <li>
         <Logout/>
       </li>
     </StyledHeaderMenu>

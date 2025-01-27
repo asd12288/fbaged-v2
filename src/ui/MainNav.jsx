@@ -6,6 +6,7 @@ import {
   HiOutlineHome,
   HiOutlineUser,
 } from "react-icons/hi2";
+import { useUser } from "../features/auth/useUser";
 
 const NavList = styled.ul`
   display: flex;
@@ -52,6 +53,8 @@ const StyledNavLink = styled(NavLink)`
 `;
 
 function MainNav() {
+  const { user } = useUser();
+
   return (
     <nav>
       <NavList>
@@ -73,12 +76,14 @@ function MainNav() {
             <span>Budget</span>
           </StyledNavLink>
         </li>
-        <li>
-          <StyledNavLink to="/admin-dashboard" activeClassName="active">
-            <HiOutlineUser />
-            <span>Admin</span>
-          </StyledNavLink>
-        </li>
+        {user.role === "admin" ? (
+          <li>
+            <StyledNavLink to="/admin-dashboard" activeClassName="active">
+              <HiOutlineUser />
+              <span>Admin</span>
+            </StyledNavLink>
+          </li>
+        ) : null}
       </NavList>
     </nav>
   );

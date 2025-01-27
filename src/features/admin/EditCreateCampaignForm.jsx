@@ -74,6 +74,7 @@ function EditCreateCampaignForm({ id }) {
         cpm: 0,
         cpc: 0,
         ctr: 0,
+        amountSpent: campaign.amountSpent ?? 0,
       });
     }
   }, [campaign, id, isPending, reset]);
@@ -83,16 +84,17 @@ function EditCreateCampaignForm({ id }) {
       ...data,
       cpm:
         data.impressions > 0
-          ? Number(((data.costPerResults / data.impressions) * 1000).toFixed(2))
+          ? Number(((data.amountSpent / data.impressions) * 1000).toFixed(2))
           : 0,
       cpc:
         data.clicks > 0
-          ? Number((data.costPerResults / data.clicks).toFixed(2))
+          ? Number((data.amountSpent / data.clicks).toFixed(2))
           : 0,
       ctr:
         data.impressions > 0
-          ? Number(((data.clicks / data.impressions) * 100).toFixed(2))
+          ? Number(((data.linkClicks / data.impressions) * 100).toFixed(2))
           : 0,
+      amountSpent: data.results * data.costPerResults,
     };
 
     const image =
@@ -238,7 +240,6 @@ function EditCreateCampaignForm({ id }) {
         </Column>
 
         <Column>
-         
           {/* Clicks */}
           <FormRowVertical>
             <label>Clicks</label>

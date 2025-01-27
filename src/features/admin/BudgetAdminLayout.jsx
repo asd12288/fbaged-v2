@@ -1,21 +1,27 @@
-import Button from "../../ui/Button";
-import ControlButtons from "../../ui/ControlButtons.JSX";
+import styled from "styled-components";
 import Heading from "../../ui/Heading";
-import DepositList from "../budget/deposit/DepositList";
-import DepositAdminForm from "./DepositAdminForm";
-import DepositAdminList from "./DepositAdminList";
+
+import DepositAddAdminForm from "./DepositAddAdminForm";
+import DepositEditAdmin from "./DepositEditAdmin";
+import GridBox from "../../ui/GridBox";
+
+const StyledLayout = styled.div`
+  grid-template-columns: 1fr 1.5fr;
+  display: grid;
+  align-items: center;
+  gap: 2.4rem;
+`;
 
 function BudgetAdminLayout() {
   return (
     <>
-      <Heading as="h2">Budget</Heading>
-      <DepositList />
-      <ControlButtons>
-        <Button>New Deposit</Button>
-        <Button>Edit</Button>
-      </ControlButtons>
-      <DepositAdminForm />
-      <DepositAdminList />
+      <Heading as={"h2"}>Budget Admin</Heading>
+      <GridBox>
+        <StyledLayout>
+          <DepositAddAdminForm />
+          <DepositEditAdmin />
+        </StyledLayout>
+      </GridBox>
     </>
   );
 }

@@ -3,11 +3,11 @@ import Table from "../../../ui/Table";
 import { formatCurrency } from "../../../utils/helpers";
 
 const NumAccount = styled.div`
-  font-size: 1.2rem;
+ 
 `;
 
 const AccountName = styled.div`
-  text-align: left;
+
 `;
 
 function AccountRow({

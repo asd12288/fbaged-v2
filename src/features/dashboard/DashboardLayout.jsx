@@ -3,6 +3,7 @@ import Stats from "./Stats";
 import BalanceCard from "../budget/balance/BalanceCard";
 import CampaignsPerformence from "../campaigns/charts/CampaignsChartPerformence";
 import ActiveCampaignsList from "../campaigns/activeCampaignsTable/ActiveCampaignsList";
+import WarningBanner from "./WarningBanner";
 
 const StyledDashboardLayout = styled.div`
   display: grid;
@@ -14,6 +15,7 @@ const StyledDashboardLayout = styled.div`
 function DashboardLayout() {
   return (
     <>
+      <WarningBanner />
       <StyledDashboardLayout>
         <Stats />
 

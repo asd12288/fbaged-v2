@@ -39,9 +39,15 @@ const Tag = styled.div`
     `}
 
   ${(props) =>
-    props.variant === "bank-transfer" &&
+    props.variant === "bank" &&
     css`
       background-color: var(--color-blue-700);
+    `}
+
+    ${(props) =>
+    props.variant === "credit" &&
+    css`
+      background-color: var(--color-brand-700);
     `}
 
   ${(props) =>

@@ -1,4 +1,4 @@
-import supabase, { supabaseUrl } from "./supabase";
+import supabase, { SUPABASE_URL } from "./supabase";
 
 export async function getCampaigns() {
   const { data, error } = await supabase.from("campaigns").select("*");

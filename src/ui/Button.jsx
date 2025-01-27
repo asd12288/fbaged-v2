@@ -6,6 +6,13 @@ const sizes = {
     padding: 1.2rem 1.6rem;
     font-weight: 500;
   `,
+
+  small: css`
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    font-weight: 500;
+    margin: 0rem 0.4rem;
+  `,
 };
 
 const variation = {

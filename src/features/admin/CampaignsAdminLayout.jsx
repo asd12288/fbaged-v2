@@ -4,9 +4,7 @@ import Button from "../../ui/Button";
 import EditCreateCampaignForm from "./EditCreateCampaignForm";
 import { useCampaigns } from "../campaigns/useCampaigns";
 import Heading from "../../ui/Heading";
-import ControlButtons from "../../ui/ControlButtons.JSX";
-
-
+import ControlButtons from "../../ui/ControlButtons.jsx";
 
 function CampaignsAdminLayout() {
   const [isEditing, setIsEditing] = useState(false);

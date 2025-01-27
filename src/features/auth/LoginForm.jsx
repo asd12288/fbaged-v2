@@ -16,7 +16,15 @@ function LoginForm() {
 
     if (!email || !password) return;
 
-    login({ email, password });
+    login(
+      { email, password },
+      {
+        onSettled: () => {
+          setEmail("");
+          setPassword("");
+        },
+      }
+    );
   }
 
   return (
@@ -24,10 +32,11 @@ function LoginForm() {
       <FormRowVertical label="Email">
         <Input
           type="text"
-          htmlFor="email"
           onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
           disabled={isPending}
+          htmlFor="email"
+          autoComplete="email"
+          placeholder="Email"
         />
       </FormRowVertical>
       <FormRowVertical label="Password">
@@ -37,6 +46,7 @@ function LoginForm() {
           htmlFor="password"
           autoComplete="current-password"
           disabled={isPending}
+          placeholder="Password"
         />
       </FormRowVertical>
       <FormRowVertical>
