@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getCurrentUser } from "../../services/authApi";
 
 export function useUser() {
+  const token = localStorage.getItem("authToken"); // Adjust based on your token storage
+
   const {
     data: user,
     isLoading,
@@ -13,7 +15,7 @@ export function useUser() {
     staleTime: 300000, // Consider data fresh for 5 minutes
     cacheTime: 600000, // Keep data in cache for 10 minutes
     refetchOnWindowFocus: false, // Prevent refetch on window focus
-    enabled: true, // Only fetch if we have a token (you might want to check this)
+    enabled: !!token, // Only fetch if token exists
   });
 
   console.log("User data in useUser hook:", user); // Debugging log
@@ -22,7 +24,7 @@ export function useUser() {
     user,
     isLoading,
     isAuthenticated: !!user,
-    profile: { role: user?.role, username: user?.username },
+    profile: user ? { role: user.role, username: user.username } : null,
     error,
   };
 }
