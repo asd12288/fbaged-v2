@@ -7,6 +7,7 @@ import {
   HiOutlineUser,
 } from "react-icons/hi2";
 import { useUser } from "../features/auth/useUser";
+import FullPageSpinner from "./FullPageSpinner";
 
 const NavList = styled.ul`
   display: flex;
@@ -53,7 +54,9 @@ const StyledNavLink = styled(NavLink)`
 `;
 
 function MainNav() {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
+
+  if (!user) return null;
 
   return (
     <nav>
