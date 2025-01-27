@@ -41,9 +41,7 @@ function AppContent() {
   console.log("[AppContent] isInMaintenance:", isInMaintenance);
   console.log("[AppContent] user:", user);
 
-  if (isMaintenanceLoading || isUserLoading) {
-    return <FullPageSpinner />;
-  }
+
 
   return (
     <BrowserRouter>
