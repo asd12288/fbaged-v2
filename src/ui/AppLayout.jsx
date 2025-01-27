@@ -2,6 +2,11 @@ import { Outlet } from "react-router";
 import styled from "styled-components";
 import Header from "./Header";
 import SideBar from "./SideBar";
+import { useUser } from "../features/auth/useUser";
+import FullPageSpinner from "./FullPageSpinner";
+import { useMaintenance } from "../features/auth/useMaintenceMode";
+import { is } from "date-fns/locale";
+import MaintenancePage from "../pages/MaintenancePage";
 
 const StyledAppLayout = styled.div`
   display: grid;
@@ -25,6 +30,17 @@ const Container = styled.div`
 `;
 
 function AppLayout() {
+  const { user, isLoading } = useUser();
+  const { isMaintenanceMode } = useMaintenance();
+
+  if (isLoading) return <FullPageSpinner />;
+
+  if (!user) return null;
+
+  if (isMaintenanceMode && user.role === "user") {
+    return <MaintenancePage />;
+  }
+
   return (
     <StyledAppLayout>
       <Header />
