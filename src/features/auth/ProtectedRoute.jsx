@@ -4,21 +4,22 @@ import { useUser } from "./useUser";
 import FullPageSpinner from "../../ui/FullPageSpinner";
 
 function ProtectedRoute({ children }) {
+  const { user, isLoading } = useUser();
   const navigate = useNavigate();
 
-  const { user, isLoading, isAuthenticated } = useUser();
-
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    console.log("[ProtectedRoute] user:", user);
+    if (!isLoading && !user) {
+      console.log("[ProtectedRoute] No user found, redirecting to login");
       navigate("/login");
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [user, isLoading, navigate]);
 
-
-
-  if (isAuthenticated) {
-    return children;
+  if (isLoading) {
+    return <FullPageSpinner />;
   }
+
+  return children;
 }
 
 export default ProtectedRoute;

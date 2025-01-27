@@ -36,6 +36,11 @@ function AppContent() {
   const isAdmin = user?.role === "admin";
   const isInMaintenance = isMaintenanceMode && !isAdmin;
 
+  console.log("[AppContent] isMaintenanceLoading:", isMaintenanceLoading);
+  console.log("[AppContent] isUserLoading:", isUserLoading);
+  console.log("[AppContent] isInMaintenance:", isInMaintenance);
+  console.log("[AppContent] user:", user);
+
   if (isMaintenanceLoading || isUserLoading) {
     return <FullPageSpinner />;
   }
