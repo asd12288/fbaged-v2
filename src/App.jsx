@@ -31,10 +31,10 @@ function App() {
 }
 
 function AppContent() {
-  const { isMaintenanceMode, isLoading: isMaintenanceLoading } = useMaintenance();
+  const { isMaintenanceMode, isLoading: isMaintenanceLoading } =
+    useMaintenance();
   const { user, isLoading: isUserLoading } = useUser();
 
-  // If we're still loading user/maintenance data, show a spinner.
   if (isMaintenanceLoading || isUserLoading) {
     return <FullPageSpinner />;
   }
@@ -45,50 +45,45 @@ function AppContent() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* CASE 1: The entire site is in maintenance for non-admins */}
-        {isInMaintenance && (
-          <Route path="*" element={<MaintenancePage />} />
+        {/* 1) Always allow /login */}
+        <Route path="/login" element={<Login />} />
+
+        {/*
+          2) If site is in maintenance mode for non-admins, any route other than /login -> MaintenancePage.
+             But we've already allowed the user to visit /login.
+        */}
+        {isInMaintenance && <Route path="*" element={<MaintenancePage />} />}
+
+        {/*
+          3) If NOT in maintenance mode (or if user is admin):
+             - If there's no user -> everything else goes to /login
+             - If there's a user -> render protected routes
+        */}
+        {!isInMaintenance && !user && (
+          <Route path="*" element={<Navigate to="/login" replace />} />
         )}
 
-        {/* CASE 2: Not in maintenance or user is admin → show normal routes */}
-        {!isInMaintenance && (
-          <>
-            {/* PUBLIC / LOGIN routes */}
-            {!user && (
-              <>
-                <Route path="/login" element={<Login />} />
-                {/*
-                  We might want the home path ("/") to go to login if user is not logged in
-                  Or you can omit this and let the wildcard (*) below handle it.
-                */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                {/* 
-                  Any other route – if not logged in – also goes to /login 
-                */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </>
+        {!isInMaintenance && user && (
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* Base path -> redirect to /dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/campaigns" element={<Campagins />} />
+            <Route path="/budget" element={<Budget />} />
+
+            {isAdmin && (
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
             )}
 
-            {/* PROTECTED routes (user is logged in) */}
-            {user && (
-              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                {/* / => redirect to /dashboard */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/campaigns" element={<Campagins />} />
-                <Route path="/budget" element={<Budget />} />
-                
-                {/* Only show admin page if user is admin (or you can handle it inside <AdminDashboard> itself) */}
-                {isAdmin && (
-                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                )}
-
-                {/* 404 for protected user → default them back to /dashboard */}
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Route>
-            )}
-          </>
+            {/* Fallback for any unknown path -> go to /dashboard */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
         )}
       </Routes>
     </BrowserRouter>
