@@ -14,9 +14,7 @@ function ProtectedRoute({ children }) {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  if (isLoading) {
-    return <FullPageSpinner />;
-  }
+
 
   if (isAuthenticated) {
     return children;

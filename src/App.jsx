@@ -25,8 +25,7 @@ function App() {
       <GlobalStyles />
       <Toaster />
       <AppContent />
-      {/* <ReactQueryDevtools /> */}
-    </QueryClientProvider>
+jj    </QueryClientProvider>
   );
 }
 
