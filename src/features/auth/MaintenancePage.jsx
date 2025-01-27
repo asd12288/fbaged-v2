@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import LoginForm from "./LoginForm";
 
 const StyledMaintenceMode = styled.div`
   display: flex;
@@ -26,6 +27,7 @@ function MaintenancePage() {
         We&apos;re currently under maintence, retry again later{" "}
       </StyledMessageMaintence>
       <StlyedImageMaintence src="/logo.png" alt="Under maintence" />
+      <LoginForm />
     </StyledMaintenceMode>
   );
 }
