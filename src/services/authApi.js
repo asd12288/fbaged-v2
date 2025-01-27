@@ -10,7 +10,7 @@ export async function login({ email, password }) {
     throw new Error("Invalid user or password");
   }
 
-  return data;
+  return data.user;
 }
 
 export const logout = async () => {
@@ -21,18 +21,20 @@ export const logout = async () => {
   }
 };
 
-export const getCurrentUser = async () => {
+export async function getCurrentUser() {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    throw new Error("No user found");
+  if (userError || !user) {
+    throw new Error(userError?.message || "No user found");
   }
 
+  // Fetch the user's profile to get additional details like 'role' and 'username'
   const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
+    .from("profiles") // Ensure you have a 'profiles' table linked to your 'users' table
+    .select("role, username")
     .eq("id", user.id)
     .single();
 
@@ -40,5 +42,5 @@ export const getCurrentUser = async () => {
     throw new Error(profileError.message);
   }
 
-  return { ...user, role: profile?.role, username: profile?.username };
-};
+  return { ...user, role: profile.role, username: profile.username };
+}
