@@ -11,6 +11,7 @@ import Budget from "./pages/Budget";
 import AdminDashboard from "./pages/AdminDashboard";
 import AppLayout from "./ui/AppLayout";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +45,7 @@ function AppContent() {
           <Route path="budget" element={<Budget />} />
           <Route path="admin-dashboard" element={<AdminDashboard />} />
 
-          <Route path="*" element={<Login />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
