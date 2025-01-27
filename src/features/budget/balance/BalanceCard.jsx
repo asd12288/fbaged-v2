@@ -4,6 +4,7 @@ import Heading from "../../../ui/Heading";
 import { useBudget } from "../useBudget";
 import { formatCurrency } from "../../../utils/helpers";
 import { useDeposits } from "../useDeposits";
+import Spinner from "../../../ui/Spinner";
 
 const StyledBalanceCard = styled.div`
   grid-area: 3 / span 2;
@@ -58,8 +59,14 @@ function BalanceCard() {
     daysLeft,
     maintenceFees,
     totalDailyBudget,
+    accountPending,
+    depositPending,
+    campaignsPending,
   } = useBudget();
 
+  if (accountPending || depositPending || campaignsPending) {
+    return <Spinner />;
+  }
 
   return (
     <StyledBalanceCard>

@@ -40,7 +40,7 @@ export async function createEditCampaign(newCampaign, id) {
   } else {
     const hasImagePath =
       typeof finalCampaign.image === "string" &&
-      finalCampaign.image?.startsWith(supabaseUrl);
+      finalCampaign.image?.startsWith(SUPABASE_URL);
     const imageName =
       typeof finalCampaign.image === "string"
         ? `${Math.random()}-${finalCampaign.image}`.replaceAll("/", "")
@@ -49,7 +49,7 @@ export async function createEditCampaign(newCampaign, id) {
           }`.replaceAll("/", "");
     const imagePath = hasImagePath
       ? finalCampaign.image
-      : `${supabaseUrl}/storage/v1/object/public/photos/${imageName}`;
+      : `${SUPABASE_URL}/storage/v1/object/public/photos/${imageName}`;
 
     if (!id) {
       query = query.insert([
