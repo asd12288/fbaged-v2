@@ -18,7 +18,7 @@ export function useBudget() {
   );
 
   const totalDailyBudget = campaigns
-    .filter(
+    ?.filter(
       (campaign) =>
         campaign?.status === "Active" || campaign?.status === "Learning"
     )
