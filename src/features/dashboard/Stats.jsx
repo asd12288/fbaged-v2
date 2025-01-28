@@ -16,10 +16,12 @@ function Stats() {
     (campaign) => campaign.status === "Active"
   ).length;
 
-  const totalDailyBudget = campaigns.reduce(
-    (acc, campaign) => acc + campaign.dailyBudget,
-    0
-  );
+  const totalDailyBudget = campaigns
+    .filter(
+      (campaign) =>
+        campaign.status === "Active" || campaign.status === "Learning"
+    )
+    .reduce((acc, campaign) => acc + campaign.dailyBudget, 0);
 
   const totalResults = campaigns.reduce(
     (acc, campaigns) => acc + campaigns.results,
