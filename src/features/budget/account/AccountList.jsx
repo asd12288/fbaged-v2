@@ -10,7 +10,7 @@ function AccountList() {
   if (isPending) return <div>Loading...</div>;
   return (
     <GridLayoutLeft>
-      <Table columns="2.5fr 2fr 2fr 1fr">
+      <Table columns="4.5fr 3fr 3fr 3fr" >
         <Table.Header>
           <div>Account Name</div>
           <div>Num accounts</div>

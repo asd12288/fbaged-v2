@@ -149,7 +149,7 @@ function EditCreateCampaignForm({ id }) {
               <option value="Active">Active</option>
               <option value="Paused">Paused</option>
               <option value="Learning">Learning</option>
-              <option value="Inactive">Inactive</option>
+              <option value="Canceled">Canceled</option>
             </StyledSelect>
             {errors.status && (
               <span style={{ color: "red" }}>{errors.status.message}</span>

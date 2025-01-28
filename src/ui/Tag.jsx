@@ -27,7 +27,7 @@ const Tag = styled.div`
 
     
   ${(props) =>
-    props.variant === "Inactive" &&
+    props.variant === "Canceled" &&
     css`
       background-color: var(--color-red-700);
     `}
