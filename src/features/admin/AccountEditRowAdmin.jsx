@@ -4,6 +4,7 @@ import Table from "../../ui/Table";
 import toast from "react-hot-toast";
 import useEditAccount from "../budget/useEditAccount";
 import { deleteAccount } from "../../services/accountsApi";
+import { formatCurrency } from "../../utils/helpers";
 
 function AccountEditRowAdmin({ account }) {
   const { editAccount } = useEditAccount();
@@ -72,7 +73,7 @@ function AccountEditRowAdmin({ account }) {
             onChange={(e) => setEditData({ ...editData, cost: e.target.value })}
           />
         ) : (
-          account.cost
+          formatCurrency(account.cost)
         )}
       </td>
       <td>

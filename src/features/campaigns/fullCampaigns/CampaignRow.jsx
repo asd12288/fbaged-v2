@@ -60,7 +60,7 @@ function CampaignRow({
       <div>{reaches}</div>
       <div>{impressions}</div>
       <div>{linkClicks}</div>
-      <div>{cpm}</div>
+      <div>{formatCurrency(cpm)}</div>
       <div>{formatCurrency(cpc)}</div>
       <div>{ctr}%</div>
       <div>{clicks}</div>

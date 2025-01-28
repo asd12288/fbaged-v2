@@ -5,6 +5,7 @@ import { useEditDeposit } from "../budget/useEditDeposit";
 import { useDeleteDeposit } from "../budget/useDeleteDeposit";
 import { useDeposits } from "../budget/useDeposits";
 import Button from "../../ui/Button";
+import { formatCurrency } from "../../utils/helpers";
 
 function DepositEditAdmin() {
   const { data: deposits, isPending } = useDeposits();
@@ -53,7 +54,7 @@ function DepositEditAdmin() {
                     }
                   />
                 ) : (
-                  deposit.amount
+                  formatCurrency(deposit.amount)
                 )}
               </td>
               <td>
