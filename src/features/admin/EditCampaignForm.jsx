@@ -41,9 +41,8 @@ const StyledSelect = styled.select`
 // ----------------- COMPONENT -----------------
 function EditCampaignForm() {
   const { data: campaign, isPending } = useCampaign("1");
-  const { isPending: isEditing, editCampaign } = useEditCampaign();
+  const { isEditing, editCampaign } = useEditCampaign();
 
-  // Register the form and destructure the needed methods
   const {
     register,
     handleSubmit,
@@ -51,7 +50,6 @@ function EditCampaignForm() {
     formState: { errors },
   } = useForm();
 
-  // Reset form values once campaign data has loaded
   useEffect(() => {
     if (!isPending && campaign) {
       reset({
@@ -93,7 +91,7 @@ function EditCampaignForm() {
 
     const image = typeof data.image === "string" ? data.image : data.image[0];
     editCampaign(
-      { newCampaign: { ...data, image }, id: campaign.id },
+      { newCampaign: { ...finalData, image }, id: campaign.id },
       {
         onSuccess: () => {
           reset();
@@ -128,7 +126,11 @@ function EditCampaignForm() {
 
           <FormRowVertical>
             <label>Daily Budget</label>
-            <Input type="number" {...register("dailyBudget")} />
+            <Input
+              type="number"
+              {...register("dailyBudget")}
+              disabled={isEditing}
+            />
           </FormRowVertical>
 
           <FormRowVertical>

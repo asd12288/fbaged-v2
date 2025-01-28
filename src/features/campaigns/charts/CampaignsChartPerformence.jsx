@@ -5,6 +5,8 @@ import { useCampaigns } from "../useCampaigns";
 import { useState } from "react";
 import styled from "styled-components";
 import Spinner from "../../../ui/Spinner";
+import { HiWallet } from "react-icons/hi2";
+import Empty from "../../../ui/Empty";
 
 const COLORS = ["#0369a1", "#059669", "#FFBB28"];
 
@@ -91,6 +93,7 @@ function CampaignsPerformence() {
   const { data: campaigns, isPending } = useCampaigns();
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // loading spinner
   if (isPending) return null;
 
   const activeCampaings = campaigns.filter(
@@ -111,28 +114,32 @@ function CampaignsPerformence() {
       <GridBox>
         <Heading as="h2">Active Campaigns Performance</Heading>
         <div style={{ width: "100%", height: 400 }}>
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                activeIndex={activeIndex}
-                activeShape={renderActiveShape}
-                data={newData}
-                cx="50%"
-                cy="50%"
-                innerRadius={100}
-                outerRadius={140}
-                dataKey="value"
-                onMouseEnter={onPieEnter}
-              >
-                {newData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          {activeCampaings.length === 0 ? (
+            <Empty />
+          ) : (
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape}
+                  data={newData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={100}
+                  outerRadius={140}
+                  dataKey="value"
+                  onMouseEnter={onPieEnter}
+                >
+                  {newData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </GridBox>
     </GridLayout>

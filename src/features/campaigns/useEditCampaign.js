@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createEditCampaign } from "../../services/campaignApi";
+import toast from "react-hot-toast";
 
 export function useEditCampaign() {
   const queryClient = useQueryClient();
@@ -9,9 +10,11 @@ export function useEditCampaign() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["campaigns"]);
+      toast.success("Campaign updated successfully");
     },
     onError: (error) => {
       console.error(error);
+      toast.error("An error occurred while updating the campaign");
     },
   });
   return { editCampaign, isEditing };
