@@ -21,7 +21,7 @@ function BudgetLayout() {
         <DepositList />
       </StyledBudgetLayout>
       <Row>
-        <Heading as="h2">Expenses overvie</Heading>
+        <Heading as="h2">Expenses overview</Heading>
         <Heading as="h2">as for {new Date().toLocaleDateString()}</Heading>
       </Row>
       <ExpensesOverview />
