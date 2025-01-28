@@ -20,7 +20,7 @@ export function useBudget() {
   const totalDailyBudget = campaigns
     .filter(
       (campaign) =>
-        campaign.status === "Active" || campaign.status === "Learning"
+        campaign?.status === "Active" || campaign?.status === "Learning"
     )
     ?.reduce((cur, campaign) => cur + campaign.dailyBudget, 0);
 
@@ -42,7 +42,9 @@ export function useBudget() {
   const budget = totalAmounts - totalSpent - totalAccountsCosts - maintenceFees; // + exchange fees;
   const positiveBudgetRequired = totalDailyBudget * 3;
 
-  const daysLeft = Number.isFinite(budget / totalDailyBudget) ? Math.floor(budget / totalDailyBudget) : 0;
+  const daysLeft = Number.isFinite(budget / totalDailyBudget)
+    ? Math.floor(budget / totalDailyBudget)
+    : 0;
 
   useEffect(() => {
     if (budget > totalDailyBudget * 3) {
