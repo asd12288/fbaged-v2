@@ -23,15 +23,16 @@ function ActiveCampaigns() {
   const { isPending, data: campaigns } = useCampaigns();
 
   if (isPending) return null;
+
   const activeCampaigns = campaigns.filter(
-    (campaign) => campaign.status === "Active"
+    (campaign) => campaign.status === "Active" || campaign.status === "Learning"
   );
 
   return (
     <FullTableGrid>
       <Row>
         <Heading as="h2">
-          Active Campaigns {new Date().toLocaleDateString()}
+          Active and Learning Campaigns {new Date().toLocaleDateString()}
         </Heading>
         <StyledLink to="/campaigns">
           <p>All Campaigns</p>

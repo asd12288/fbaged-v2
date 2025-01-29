@@ -96,11 +96,11 @@ function CampaignsPerformence() {
   // loading spinner
   if (isPending) return null;
 
-  const activeCampaings = campaigns.filter(
-    (campaign) => campaign.status === "Active"
+  const activeCampaigns = campaigns.filter(
+    (campaign) => campaign.status === "Active" || campaign.status === "Learning"
   );
 
-  const newData = activeCampaings.map((campaign) => ({
+  const newData = activeCampaigns.map((campaign) => ({
     name: campaign.campaignName,
     value: campaign.results,
   }));
@@ -114,7 +114,7 @@ function CampaignsPerformence() {
       <GridBox>
         <Heading as="h2">Active Campaigns Performance</Heading>
         <div style={{ width: "100%", height: 400 }}>
-          {activeCampaings.length === 0 ? (
+          {activeCampaigns.length === 0 ? (
             <Empty />
           ) : (
             <ResponsiveContainer>
