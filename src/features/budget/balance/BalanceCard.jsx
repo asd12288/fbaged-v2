@@ -98,8 +98,8 @@ function BalanceCard() {
           </Detail>
 
           <Detail>
-            <span>Days Remaining</span>
-            <span>{daysLeft} days</span>
+            <span>Extra Days Remaining</span>
+            <span>{Number(daysLeft) - 3} days</span>
           </Detail>
         </DetailsGrid>
       </GridBox>
