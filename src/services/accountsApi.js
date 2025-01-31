@@ -10,7 +10,11 @@ export async function getAccounts() {
 }
 
 export async function createAccount(account) {
-  const { data, error } = await supabase.from("accounts").insert([account]);
+  const { data, error } = await supabase
+    .from("accounts")
+    .insert([account])
+    .single();
+
   if (error) {
     console.log("error", error);
     throw new Error("An error occurred while creating the account.");
@@ -31,7 +35,7 @@ export async function updateAccount(id, updatedAccount) {
 
 export async function deleteAccount(id) {
   const { data, error } = await supabase.from("accounts").delete().eq("id", id);
+  
   if (error) throw new Error("An error occurred while deleting the account.");
   return data;
 }
-
