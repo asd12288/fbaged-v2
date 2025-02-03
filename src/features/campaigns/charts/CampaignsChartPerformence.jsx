@@ -8,7 +8,17 @@ import Spinner from "../../../ui/Spinner";
 import { HiWallet } from "react-icons/hi2";
 import Empty from "../../../ui/Empty";
 
-const COLORS = ["#0369a1", "#059669", "#FFBB28", "#FF8042", ""];
+const COLORS = [
+  "#0369a1", // Existing color
+  "#059669", // Existing color
+  "#FFBB28", // Existing color
+  "#FF8042", // Existing color
+  "#4B0082", // Indigo
+  "#FFD700", // Gold
+  "#8B0000", // Dark Red
+  "#00CED1", // Dark Turquoise
+  "#FF69B4"  // Hot Pink
+];
 
 const GridLayout = styled.div`
   grid-area: 3 / span 2;
