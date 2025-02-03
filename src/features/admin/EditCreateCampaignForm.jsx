@@ -141,7 +141,7 @@ function EditCreateCampaignForm({ id }) {
               {...register("status", {
                 required: "Status is required",
                 validate: (value) =>
-                  ["Active", "Paused", "Learning", "Inactive"].includes(value)
+                  ["Active", "Paused", "Learning", "Canceled"].includes(value)
                     ? true
                     : "Invalid status",
               })}

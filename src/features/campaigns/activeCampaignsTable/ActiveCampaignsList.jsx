@@ -5,7 +5,6 @@ import ActiveCampaignsRow from "./ActiveCampaignsRow";
 import Heading from "../../../ui/Heading";
 import Row from "../../../ui/Row";
 import { Link } from "react-router";
-import Empty from "../../../ui/Empty";
 
 const FullTableGrid = styled.div`
   grid-area: 4 / span 4 / auto / span 4;
