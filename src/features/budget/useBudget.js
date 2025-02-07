@@ -17,6 +17,11 @@ export function useBudget() {
     0
   );
 
+  const exchangesFees =
+    deposits?.reduce((acc, deposit) => acc + deposit.amount, 0) * 0.05;
+
+  console.log(totalAmounts);
+
   const totalDailyBudget = campaigns
     ?.filter(
       (campaign) =>
@@ -39,7 +44,7 @@ export function useBudget() {
     0
   );
 
-  const budget = totalAmounts - totalSpent - totalAccountsCosts - maintenceFees; // + exchange fees;
+  const budget = totalAmounts - totalSpent - totalAccountsCosts - maintenceFees - exchangesFees
   const positiveBudgetRequired = totalDailyBudget * 3;
 
   const daysLeft = Number.isFinite(budget / totalDailyBudget)
