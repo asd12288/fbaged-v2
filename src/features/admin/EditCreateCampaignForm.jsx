@@ -199,6 +199,7 @@ function EditCreateCampaignForm({ id }) {
           <FormRowVertical>
             <label>Results</label>
             <Input
+              disabled
               type="number"
               {...register("results", {
                 valueAsNumber: true,
