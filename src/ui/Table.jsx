@@ -10,6 +10,8 @@ const StyledTable = styled.table`
       background-color: var(--color-grey-50);
       border-radius: 7px;
       align-items: center;
+      overflow-x: auto;
+      width: 100%;
     `}
 
   ${(props) =>
@@ -29,6 +31,10 @@ const StyledTable = styled.table`
     css`
       text-align: center;
     `}
+`;
+
+const TableWrapper = styled.div`
+  overflow-x: auto;
 `;
 
 // Also reduce CommonRow gaps for more compact columns
@@ -122,7 +128,9 @@ const TableContext = createContext();
 function Table({ columns, children, type = "regular" }) {
   return (
     <TableContext.Provider value={{ columns }}>
-      <StyledTable type={type}>{children}</StyledTable>
+      <TableWrapper>
+        <StyledTable type={type}>{children}</StyledTable>
+      </TableWrapper>
     </TableContext.Provider>
   );
 }

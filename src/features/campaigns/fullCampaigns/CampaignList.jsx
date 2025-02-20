@@ -13,7 +13,7 @@ function CampaignList() {
     <>
       <Table
         type="compact"
-        columns="2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr"
+        columns="2fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr"
       >
         <Table.Header type="compact">
           <Tooltip content="Campaign Name">
@@ -21,6 +21,9 @@ function CampaignList() {
           </Tooltip>
           <Tooltip content="The current status (e.g., active, paused)">
             <div>Status</div>
+          </Tooltip>
+          <Tooltip content="leads generated from the campaign on the last 24 hours">
+            <div>Daily Results</div>
           </Tooltip>
           <Tooltip content="Number of results generated">
             <div>Results</div>

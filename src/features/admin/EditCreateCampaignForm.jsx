@@ -75,6 +75,7 @@ function EditCreateCampaignForm({ id }) {
         cpc: 0,
         ctr: 0,
         amountSpent: campaign.amountSpent ?? 0,
+        dailyResults: campaign.dailyResults ?? 0,
       });
     }
   }, [campaign, id, isPending, reset]);
@@ -95,6 +96,8 @@ function EditCreateCampaignForm({ id }) {
           ? Number(((data.linkClicks / data.impressions) * 100).toFixed(2))
           : 0,
       amountSpent: data.results * data.costPerResults,
+
+      results: data.dailyResults + data.results,
     };
 
     const image =
@@ -171,6 +174,25 @@ function EditCreateCampaignForm({ id }) {
             />
             {errors.dailyBudget && (
               <span style={{ color: "red" }}>{errors.dailyBudget.message}</span>
+            )}
+          </FormRowVertical>
+
+          <FormRowVertical>
+            <label>Daily Results</label>
+            <Input
+              type="number"
+              {...register("dailyResults", {
+                valueAsNumber: true,
+                validate: {
+                  nonNegative: (value) =>
+                    value >= 0 || "Daily Results must be >= 0",
+                },
+              })}
+            />
+            {errors.dailyResults && (
+              <span style={{ color: "red" }}>
+                {errors.dailyResults.message}
+              </span>
             )}
           </FormRowVertical>
 

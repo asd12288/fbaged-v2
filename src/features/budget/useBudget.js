@@ -44,7 +44,12 @@ export function useBudget() {
     0
   );
 
-  const budget = totalAmounts - totalSpent - totalAccountsCosts - maintenceFees - exchangesFees
+  const budget =
+    totalAmounts -
+    totalSpent -
+    totalAccountsCosts -
+    maintenceFees -
+    exchangesFees;
   const positiveBudgetRequired = totalDailyBudget * 3;
 
   const daysLeft = Number.isFinite(budget / totalDailyBudget)

@@ -1,10 +1,9 @@
 import styled from "styled-components";
 import GridBox from "../../../ui/GridBox";
 import Heading from "../../../ui/Heading";
-import { useBudget } from "../useBudget";
 import { formatCurrency } from "../../../utils/helpers";
-import { useDeposits } from "../useDeposits";
-import Spinner from "../../../ui/Spinner";
+import { useBudget } from "../useBudget";
+import { motion } from "motion/react"
 
 const StyledBalanceCard = styled.div`
   grid-area: 3 / span 2;

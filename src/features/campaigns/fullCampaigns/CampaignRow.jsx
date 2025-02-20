@@ -37,6 +37,7 @@ function CampaignRow({
     costPerResults,
     amountSpent,
     image,
+    dailyResults,
   },
 }) {
   const [isHovered, setIsHovered] = useState(false); // Track hover state
@@ -56,6 +57,7 @@ function CampaignRow({
       <Tag size="small" variant={status}>
         {status}
       </Tag>
+      <div>{dailyResults}</div>
       <div>{results}</div>
       <div>{reaches}</div>
       <div>{impressions}</div>
