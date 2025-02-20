@@ -96,8 +96,6 @@ function EditCreateCampaignForm({ id }) {
           ? Number(((data.linkClicks / data.impressions) * 100).toFixed(2))
           : 0,
       amountSpent: data.results * data.costPerResults,
-
-      results: data.dailyResults + data.results,
     };
 
     const image =
