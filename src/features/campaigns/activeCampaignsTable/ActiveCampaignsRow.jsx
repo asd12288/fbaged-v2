@@ -30,6 +30,7 @@ function ActiveCampaignsRow({
     results,
     costPerResults,
     image,
+    dailyResults,
   },
 }) {
   const [isHovered, setIsHovered] = useState(false); // Track hover state
@@ -47,6 +48,7 @@ function ActiveCampaignsRow({
       <div>{campaignName}</div>
 
       <div>{results}</div>
+      <div>{dailyResults}</div>
 
       <div>{formatCurrency(costPerResults)}</div>
       <div>{formatCurrency(dailyBudget)}</div>

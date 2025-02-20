@@ -37,10 +37,11 @@ function ActiveCampaigns() {
           <p>All Campaigns</p>
         </StyledLink>
       </Row>
-      <Table columns="1.5fr 1fr 1fr 1fr 1fr 1fr">
+      <Table columns="1.5fr 1fr 0.8fr 1fr 1fr 1fr 1fr">
         <Table.Header>
           <div>Campaign Name</div>
           <div>Results</div>
+          <div>Daily Results</div>
 
           <div>CPR</div>
 
