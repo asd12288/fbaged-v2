@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import styled, { css } from "styled-components";
+import React from "react";
 
 const StyledTable = styled.table`
   ${(props) =>
@@ -9,8 +10,7 @@ const StyledTable = styled.table`
       font-size: 1.6rem;
       background-color: var(--color-grey-50);
       border-radius: 7px;
-      align-items: center;
-      overflow-x: auto;
+      overflow: hidden;
       width: 100%;
     `}
 
@@ -22,8 +22,6 @@ const StyledTable = styled.table`
       background-color: var(--color-grey-50);
       border-radius: 6px;
       text-align: center;
-      overflow-x: auto;
-      padding: 0.4rem;
     `}
 
     ${(props) =>
@@ -37,97 +35,66 @@ const TableWrapper = styled.div`
   overflow-x: auto;
 `;
 
-// Also reduce CommonRow gaps for more compact columns
-const CommonRow = styled.div`
-  display: grid;
-  grid-template-columns: ${(props) => props.columns};
-  column-gap: 1.2rem;
-  align-items: center;
-  transition: none;
-`;
-
-const StyledHeader = styled(CommonRow)`
-  padding: 1.2rem 2.4rem;
-
+const StyledThead = styled.thead`
   background-color: var(--color-grey-200);
   border-bottom: 1px solid var(--color-grey-400);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   font-weight: 600;
   color: var(--color-grey-600);
-
-  ${(props) =>
-    props.type === "compact" &&
-    css`
-      font-size: 1.1rem;
-      border-radius: 6px;
-      text-align: center;
-      overflow-x: auto;
-      gap: 0.8rem;
-      padding: 1.5rem 2.8rem;
-    `}
-
-  ${(props) =>
-    props.type === "center" &&
-    css`
-      text-align: center;
-    `}
 `;
 
-const StyledRow = styled(CommonRow)`
-  padding: 1.2rem 2.4rem;
+const StyledTbody = styled.tbody`
+  font-size: 1.4rem;
+`;
 
-  ${(props) =>
-    props.type === "compact" &&
-    css`
-      font-size: 1.1rem;
-      gap: 0.8rem;
-      letter-spacing: 0.4px;
-    `}
-
-  ${(props) =>
-    props.type === "center" &&
-    css`
-      text-align: center;
-    `}
-
+const StyledTr = styled.tr`
   &:not(:last-child) {
     border-bottom: 1px solid var(--color-grey-100);
   }
-`;
-
-const StyledBody = styled.section`
-  margin: 0.4rem 0;
 
   ${(props) =>
-    props.type === "center" &&
+    props.type === "compact" &&
     css`
-      text-align: center;
+      font-size: 1.1rem;
+      letter-spacing: 0.4px;
     `}
 `;
 
-const StyledFooter = styled.footer`
-  background-color: var(--color-grey-100);
-  display: flex;
-  padding: 1.2rem;
+const StyledTh = styled.th`
+  padding: 1.2rem 2.4rem;
+  text-align: ${(props) => props.align || "left"};
+
+  ${(props) =>
+    props.type === "compact" &&
+    css`
+      padding: 0.8rem 1.2rem;
+    `}
 `;
 
-const Empty = styled.p`
+const StyledTd = styled.td`
+  padding: 1.2rem 2.4rem;
+  text-align: ${(props) => props.align || "left"};
+
+  ${(props) =>
+    props.type === "compact" &&
+    css`
+      padding: 0.8rem 1.2rem;
+    `}
+`;
+
+const Empty = styled.div`
   font-size: 1.6rem;
-  text-align: center;
   font-weight: 500;
+  text-align: center;
   margin: 2.4rem;
 `;
-
-StyledTable.defaultProps = {
-  type: "regular",
-};
 
 const TableContext = createContext();
 
 function Table({ columns, children, type = "regular" }) {
   return (
-    <TableContext.Provider value={{ columns }}>
+    <TableContext.Provider value={{ columns, type }}>
       <TableWrapper>
         <StyledTable type={type}>{children}</StyledTable>
       </TableWrapper>
@@ -135,32 +102,67 @@ function Table({ columns, children, type = "regular" }) {
   );
 }
 
-function Header({ children, type = "regular" }) {
-  const { columns } = useContext(TableContext);
+function Header({ children, type }) {
+  const { columns, type: contextType } = useContext(TableContext);
+  const headerType = type || contextType;
+
   return (
-    <StyledHeader type={type} role="row" columns={columns} as="header">
-      {children}
-    </StyledHeader>
+    <StyledThead>
+      <StyledTr type={headerType}>
+        {React.Children.map(children, (child, i) => (
+          <StyledTh key={i} type={headerType}>
+            {child}
+          </StyledTh>
+        ))}
+      </StyledTr>
+    </StyledThead>
   );
 }
 
-function Row({ children, type = "regular" }) {
-  const { columns } = useContext(TableContext);
+function Row({ children, type }) {
+  const { columns, type: contextType } = useContext(TableContext);
+  const rowType = type || contextType;
+
   return (
-    <StyledRow type={type} role="row" columns={columns}>
-      {children}
-    </StyledRow>
+    <StyledTr type={rowType}>
+      {React.Children.map(children, (child, i) => (
+        <StyledTd key={i} type={rowType}>
+          {child}
+        </StyledTd>
+      ))}
+    </StyledTr>
   );
 }
 
-function Body({ data, render, type = "regular" }) {
-  if (!data.length) return <Empty>Empty</Empty>;
+function Body({ data, render, type }) {
+  const { type: contextType } = useContext(TableContext);
+  const bodyType = type || contextType;
 
-  return <StyledBody>{data.map(render)}</StyledBody>;
+  if (!data || data.length === 0) {
+    return (
+      <StyledTbody>
+        <StyledTr>
+          <StyledTd colSpan="100%">
+            <Empty>No data to display</Empty>
+          </StyledTd>
+        </StyledTr>
+      </StyledTbody>
+    );
+  }
+
+  return (
+    <StyledTbody>
+      {data.map((item, index) => (
+        <React.Fragment key={item.id || `row-${index}`}>
+          {render(item, index)}
+        </React.Fragment>
+      ))}
+    </StyledTbody>
+  );
 }
 
-function Footer({ data, render }) {
-  return <StyledFooter>{render}</StyledFooter>;
+function Footer({ children }) {
+  return <tfoot>{children}</tfoot>;
 }
 
 Table.Header = Header;

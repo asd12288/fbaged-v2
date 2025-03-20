@@ -4,6 +4,7 @@ import Tag from "../../../ui/Tag";
 import { formatCurrency } from "../../../utils/helpers";
 import styled from "styled-components";
 import { useState } from "react";
+import React from "react";
 
 // Styled image with smooth transitions
 const Img = styled.img`
@@ -16,13 +17,19 @@ const Img = styled.img`
   height: auto;
   box-shadow: var(--box-shadow);
   border: 2px solid white;
-  transition: opacity 0.2s ease-in-out; /* Smooth transition */
-  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)}; /* Show/hide image */
-  pointer-events: none; /* Prevent interaction with the image */
+  transition: opacity 0.2s ease-in-out;
+  opacity: ${({ isVisible }) => (isVisible ? 1 : 0)};
+  pointer-events: none;
+`;
+
+const ZoomContainer = styled.div`
+  position: relative;
+  cursor: pointer;
 `;
 
 function CampaignRow({
   campaign: {
+    id,
     campaignName,
     status,
     dailyBudget,
@@ -40,20 +47,19 @@ function CampaignRow({
     dailyResults,
   },
 }) {
-  const [isHovered, setIsHovered] = useState(false); // Track hover state
+  const [isHovered, setIsHovered] = useState(false);
 
   function handleMouseEnter() {
-    setIsHovered(true); // Show the image
+    setIsHovered(true);
   }
 
   function handleMouseExit() {
-    setIsHovered(false); // Hide the image immediately
+    setIsHovered(false);
   }
 
   return (
-    <Table.Row type="compact">
+    <Table.Row>
       <div>{campaignName}</div>
-
       <Tag size="small" variant={status}>
         {status}
       </Tag>
@@ -69,21 +75,15 @@ function CampaignRow({
       <div>{formatCurrency(costPerResults)}</div>
       <div>{formatCurrency(amountSpent)}</div>
       <div>{formatCurrency(dailyBudget)}</div>
-
-      {/* Hover logic */}
-      <div
+      <ZoomContainer
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseExit}
-        style={{ position: "relative" }}
       >
-        {/* Display zoom icon by default */}
         <HiOutlineZoomIn />
-
-        {/* Conditionally render image with a fade effect */}
         {isHovered && (
           <Img src={image} alt="Campaign preview" isVisible={isHovered} />
         )}
-      </div>
+      </ZoomContainer>
     </Table.Row>
   );
 }

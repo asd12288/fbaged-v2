@@ -3,19 +3,65 @@ import Table from "../../../ui/Table";
 import CampaignRow from "./CampaignRow";
 import Tooltip from "../../../ui/Tooltip";
 import Spinner from "../../../ui/Spinner";
+import { useState } from "react";
+import styled from "styled-components";
+
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+  align-items: center;
+`;
+
+const FilterLabel = styled.label`
+  font-weight: 500;
+  font-size: 1.4rem;
+`;
+
+const StatusFilter = styled.select`
+  font-size: 1.4rem;
+  padding: 0.8rem 1.2rem;
+  border: 1px solid var(--color-grey-300);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-grey-0);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+`;
 
 function CampaignList() {
+  const [statusFilter, setStatusFilter] = useState("Active");
   const { isPending, data: campaigns } = useCampaigns();
 
   if (isPending) return <Spinner />;
 
+  // Filter campaigns based on selected status
+  const filteredCampaigns =
+    statusFilter === "All"
+      ? campaigns
+      : campaigns.filter((campaign) => campaign.status === statusFilter);
+
   return (
     <>
+      <FilterContainer>
+        <FilterLabel htmlFor="statusFilter">Filter by status:</FilterLabel>
+        <StatusFilter
+          id="statusFilter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="All">All</option>
+          <option value="Active">Active</option>
+          <option value="Paused">Paused</option>
+          <option value="Learning">Learning</option>
+          <option value="Canceled">Canceled</option>
+        </StatusFilter>
+      </FilterContainer>
+
       <Table
         type="compact"
         columns="2fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr"
       >
-        <Table.Header type="compact">
+        <Table.Header>
           <Tooltip content="Campaign Name">
             <div>Campaign Name</div>
           </Tooltip>
@@ -58,11 +104,13 @@ function CampaignList() {
           <Tooltip content="Daily budget allocated for this campaign">
             <div>Daily Budget</div>
           </Tooltip>
-          <div>image</div>
+          <div>Image</div>
         </Table.Header>
         <Table.Body
-          data={campaigns}
-          render={(campaign) => <CampaignRow campaign={campaign} />}
+          data={filteredCampaigns}
+          render={(campaign) => (
+            <CampaignRow key={campaign.id} campaign={campaign} />
+          )}
         />
       </Table>
     </>
