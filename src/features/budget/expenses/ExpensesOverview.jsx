@@ -28,7 +28,7 @@ function ExpensesOverview() {
   const expensesData = [
     { type: "Maintence Fees", amount: maintenceFees },
     { type: "Exchanges Fee", amount: exchangesFees },
-    { type: "Total Campaigns Spent", amount: totalCampaignsSpent },
+    { type: "Total Campaigns Spent (Facebook Expenses)", amount: totalCampaignsSpent },
     {
       type: "Total Expenses",
       amount: maintenceFees + exchangesFees + totalCampaignsSpent,

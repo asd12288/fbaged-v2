@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
-import CampaginsPerformenceAll from "../features/campaigns/fullCampaigns/CampaginsPerformenceAll";
+import DailyCampaignStats from "../features/campaigns/activeCampaignsTable/DailyCampaignStats";
 import CampaignList from "../features/campaigns/fullCampaigns/CampaignList";
 import WarningBanner from "../features/dashboard/WarningBanner";
 import Heading from "../ui/Heading";
@@ -34,7 +34,7 @@ const Container = styled.div`
 `;
 
 function Campagins() {
-  const [activeTab, setActiveTab] = useState("list");
+  const [activeTab, setActiveTab] = useState("stats");
 
   return (
     <>
@@ -42,20 +42,20 @@ function Campagins() {
       <WarningBanner />
 
       <TabContainer>
+        <Tab
+          active={activeTab === "stats"}
+          onClick={() => setActiveTab("stats")}
+        >
+          Daily Campaign Stats
+        </Tab>
         <Tab active={activeTab === "list"} onClick={() => setActiveTab("list")}>
           Campaign List
-        </Tab>
-        <Tab
-          active={activeTab === "performance"}
-          onClick={() => setActiveTab("performance")}
-        >
-          Performance Analytics
         </Tab>
       </TabContainer>
 
       <Container>
+        {activeTab === "stats" && <DailyCampaignStats />}
         {activeTab === "list" && <CampaignList />}
-        {activeTab === "performance" && <CampaginsPerformenceAll />}
       </Container>
     </>
   );
