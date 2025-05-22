@@ -76,7 +76,7 @@ function BalanceCard() {
         )}
 
         <p>
-          Amount Required:
+          Amount Minimum Required:{" "}
           <span>5,000.00€</span>
         </p>
 
