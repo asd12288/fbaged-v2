@@ -25,10 +25,8 @@ function WarningBanner() {
         ) : (
           <p>
             Analyzing your funding history, our system detected that you will
-            run out of funds in the next couple of days. Remaining Budget:{" "}
-            <br />
-            <span>{formatCurrency(budget)}</span>. Fund your account so your
-            campaigns will stay active!
+            run out of funds in the next couple of days. Fund your account so
+            your campaigns will stay active!
           </p>
         )}
       </Banner>

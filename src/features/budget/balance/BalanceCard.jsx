@@ -76,8 +76,8 @@ function BalanceCard() {
         )}
 
         <p>
-          Amount Required for 3 next days:{" "}
-          <span>{formatCurrency(positiveBudgetRequired)}</span>
+          Amount Required:
+          <span>5,000.00€</span>
         </p>
 
         <DetailsGrid>

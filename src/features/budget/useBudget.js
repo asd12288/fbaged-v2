@@ -50,7 +50,13 @@ export function useBudget() {
     totalAccountsCosts -
     maintenceFees -
     exchangesFees;
-  const positiveBudgetRequired = totalDailyBudget * 3;
+
+  
+  // const positiveBudgetRequired = totalDailyBudget * 3;
+
+
+  // temporary fix for positiveBudgetRequired
+  const positiveBudgetRequired = 7000
 
   const daysLeft = Number.isFinite(budget / totalDailyBudget)
     ? Math.floor(budget / totalDailyBudget)
