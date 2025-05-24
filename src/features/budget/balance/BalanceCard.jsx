@@ -96,10 +96,10 @@ function BalanceCard() {
             <span>{formatCurrency(totalDailyBudget)}</span>
           </Detail>
 
-          <Detail>
+          {/* <Detail>
             <span>Extra Days Remaining</span>
             <span>{Number(daysLeft) - 3} days</span>
-          </Detail>
+          </Detail> */}
         </DetailsGrid>
       </GridBox>
     </StyledBalanceCard>

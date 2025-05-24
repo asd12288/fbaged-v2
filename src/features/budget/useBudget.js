@@ -20,7 +20,6 @@ export function useBudget() {
   const exchangesFees =
     deposits?.reduce((acc, deposit) => acc + deposit.amount, 0) * 0.05;
 
-  console.log(totalAmounts);
 
   const totalDailyBudget = campaigns
     ?.filter(
@@ -63,7 +62,7 @@ export function useBudget() {
     : 0;
 
   useEffect(() => {
-    if (budget > totalDailyBudget * 3) {
+    if (budget > 5000) {
       setBudgetLow(false);
     } else {
       setBudgetLow(true);
