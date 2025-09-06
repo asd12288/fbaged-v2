@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Table from "../../ui/Table";
 import { useUsers } from "./useUsers";
+import { useUser } from "../auth/useUser";
 import UserRow from "./UserRow";
 import styled from "styled-components";
 import Spinner from "../../ui/Spinner";
@@ -82,27 +83,32 @@ const EmptyState = styled.div`
 
 function UserManagementTable() {
   const { data: users, isPending } = useUsers();
+  const { user: currentUser } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter users based on search query
-  const filteredUsers =
-    searchQuery.trim() === ""
-      ? users
-      : users?.filter(
-          (user) =>
-            user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+  const filteredUsers = (users || [])
+    // Exclude current user just in case backend didn't
+    .filter((u) => (currentUser?.id ? u.id !== currentUser.id : true))
+    // Apply search
+    .filter((user) => {
+      if (searchQuery.trim() === "") return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (user.username || "").toLowerCase().includes(q) ||
+        (user.email || "").toLowerCase().includes(q)
+      );
+    });
 
   // Calculate summary statistics
   let totalUsers = 0;
   let adminCount = 0;
   let userCount = 0;
 
-  if (!isPending && users) {
-    totalUsers = users.length;
-    adminCount = users.filter((user) => user.role === "admin").length;
-    userCount = users.filter((user) => user.role === "user").length;
+  if (!isPending && filteredUsers) {
+    totalUsers = filteredUsers.length;
+    adminCount = filteredUsers.filter((user) => user.role === "admin").length;
+    userCount = filteredUsers.filter((user) => user.role === "user").length;
   }
 
   if (isPending) return <Spinner />;

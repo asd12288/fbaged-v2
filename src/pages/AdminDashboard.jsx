@@ -28,9 +28,9 @@ const Tab = styled.button`
   font-size: 1.6rem;
   font-weight: 600;
   color: ${(props) =>
-    props.active ? "var(--color-brand-600)" : "var(--color-grey-500)"};
+    props.$active ? "var(--color-brand-600)" : "var(--color-grey-500)"};
   border-bottom: 2px solid
-    ${(props) => (props.active ? "var(--color-brand-600)" : "transparent")};
+    ${(props) => (props.$active ? "var(--color-brand-600)" : "transparent")};
   cursor: pointer;
   transition: all 0.3s;
 
@@ -65,25 +65,25 @@ function AdminDashboard() {
       <AdminContainer>
         <TabContainer>
           <Tab
-            active={activeTab === "campaigns"}
+            $active={activeTab === "campaigns"}
             onClick={() => setActiveTab("campaigns")}
           >
             Campaigns
           </Tab>
           <Tab
-            active={activeTab === "budget"}
+            $active={activeTab === "budget"}
             onClick={() => setActiveTab("budget")}
           >
             Budget
           </Tab>
           <Tab
-            active={activeTab === "accounts"}
+            $active={activeTab === "accounts"}
             onClick={() => setActiveTab("accounts")}
           >
             Accounts
           </Tab>
           <Tab
-            active={activeTab === "users"}
+            $active={activeTab === "users"}
             onClick={() => setActiveTab("users")}
           >
             Users

@@ -23,7 +23,7 @@ const StatusIndicator = styled.div`
   gap: 0.8rem;
   font-weight: 600;
   color: ${(props) =>
-    props.isOn ? "var(--color-red-700)" : "var(--color-green-700)"};
+    props.$isOn ? "var(--color-red-700)" : "var(--color-green-700)"};
 
   svg {
     width: 2.2rem;
@@ -43,7 +43,7 @@ function AdminControls() {
     <StyledControls>
       <StatusContainer>
         <p>System Status:</p>
-        <StatusIndicator isOn={isMaintenanceMode}>
+        <StatusIndicator $isOn={isMaintenanceMode}>
           {isMaintenanceMode ? (
             <>
               <HiShieldExclamation />
@@ -61,7 +61,7 @@ function AdminControls() {
       <Button
         disabled={isToggling}
         onClick={() => toggleMaintenance(!isMaintenanceMode)}
-        variant={isMaintenanceMode ? "secondary" : "danger"}
+        variation={isMaintenanceMode ? "secondary" : "primary"}
       >
         {isToggling ? (
           <Spinner />
