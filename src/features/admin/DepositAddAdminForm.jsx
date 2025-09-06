@@ -9,6 +9,7 @@ import { HiCalendar, HiCurrencyDollar, HiCreditCard } from "react-icons/hi";
 import SpinnerMini from "../../ui/SpinnerMini";
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { useAdminScope } from "./AdminScopeContext";
 
 const FormTitle = styled.h3`
   font-size: 1.8rem;
@@ -68,6 +69,7 @@ const SuccessMessage = styled.div`
 
 function DepositAddAdminForm() {
   const { isPending: isAdding, addDeposit } = useCreateDeposit();
+  const { selectedUserId } = useAdminScope();
   const [showSuccess, setShowSuccess] = useState(false);
 
   const {
@@ -88,9 +90,14 @@ function DepositAddAdminForm() {
       amount: Number(data.amount),
     };
 
+    if (!selectedUserId) {
+      toast.error("Select a user first");
+      return;
+    }
+
     addDeposit(
       {
-        newDeposit: formattedData,
+        newDeposit: { ...formattedData, user_id: selectedUserId },
       },
       {
         onSuccess: () => {

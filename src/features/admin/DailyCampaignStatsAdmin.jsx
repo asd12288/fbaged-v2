@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import Table from "../../ui/Table";
 import { useCampaigns } from "../campaigns/useCampaigns";
+import { useAdminScope } from "./AdminScopeContext";
 import { HiPencil } from "react-icons/hi";
 import Button from "../../ui/Button";
 import Modal from "../../ui/Modal";
@@ -126,7 +127,10 @@ CampaignStatsForm.propTypes = {
 };
 
 function DailyCampaignStatsAdmin() {
-  const { data: campaigns, isPending } = useCampaigns();
+  const { selectedUserId } = useAdminScope();
+  const { data: campaigns, isPending } = useCampaigns({
+    filterUserId: selectedUserId,
+  });
 
   if (isPending) return <Spinner />;
 

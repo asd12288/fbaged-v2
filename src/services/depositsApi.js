@@ -1,9 +1,11 @@
 import supabase from "./supabase";
 
-// For regular users, restrict to their own deposits; admins see all
-export async function getDeposits({ userId, isAdmin } = {}) {
+// For regular users, restrict to their own deposits; admins see all.
+// If filterUserId is provided, always scope to that user (admin dashboard use-case).
+export async function getDeposits({ userId, isAdmin, filterUserId } = {}) {
   let query = supabase.from("deposits").select("*");
-  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  if (filterUserId) query = query.eq("user_id", filterUserId);
+  else if (!isAdmin && userId) query = query.eq("user_id", userId);
   const { data, error } = await query;
   if (error) {
     console.log("depositsApi.js: getDeposits error", error.message);

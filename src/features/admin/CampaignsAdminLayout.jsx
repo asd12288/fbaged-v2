@@ -3,6 +3,7 @@ import CampaignList from "../campaigns/fullCampaigns/CampaignList";
 import Button from "../../ui/Button";
 import EditCreateCampaignForm from "./EditCreateCampaignForm";
 import { useCampaigns } from "../campaigns/useCampaigns";
+import { useAdminScope } from "./AdminScopeContext";
 import Heading from "../../ui/Heading";
 import styled from "styled-components";
 import { HiPlus, HiPencil, HiSearch } from "react-icons/hi";
@@ -94,7 +95,10 @@ const SearchIcon = styled(HiSearch)`
 function CampaignsAdminLayout() {
   const [selectedCampaignId, setSelectedCampaignId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: campaigns, isPending } = useCampaigns();
+  const { selectedUserId } = useAdminScope();
+  const { data: campaigns, isPending } = useCampaigns({
+    filterUserId: selectedUserId,
+  });
 
   // Calculate campaign statistics
   let totalCampaigns = 0;
@@ -210,7 +214,7 @@ function CampaignsAdminLayout() {
       </ControlsContainer>
 
       {/* Display campaigns list */}
-      <CampaignList />
+      <CampaignList filterUserId={selectedUserId} />
     </>
   );
 }

@@ -2,14 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getCampaigns } from "../../services/campaignApi";
 import { useUser } from "../auth/useUser";
 
-export function useCampaigns() {
+export function useCampaigns(params = {}) {
   const { user } = useUser();
-  const isAdmin = user?.role === "admin";
   const userId = user?.id;
 
   const { isPending, data, error } = useQuery({
-    queryKey: ["campaigns", isAdmin ? "all" : userId],
-    queryFn: () => getCampaigns({ userId, isAdmin }),
+    queryKey: ["campaigns", params.filterUserId ?? userId],
+    queryFn: () => getCampaigns({ userId, filterUserId: params.filterUserId }),
     enabled: !!user,
   });
   return { isPending, data, error };

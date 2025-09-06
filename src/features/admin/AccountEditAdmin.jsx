@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Table from "../../ui/Table";
 import { useAccounts } from "../budget/useAccounts";
+import { useAdminScope } from "./AdminScopeContext";
 import AccountEditRowAdmin from "./AccountEditRowAdmin";
 import styled from "styled-components";
 import Spinner from "../../ui/Spinner";
@@ -82,7 +83,10 @@ const EmptyState = styled.div`
 `;
 
 function AccountEditAdmin() {
-  const { data: accounts, isPending } = useAccounts();
+  const { selectedUserId } = useAdminScope();
+  const { data: accounts, isPending } = useAccounts({
+    filterUserId: selectedUserId,
+  });
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter accounts based on search query

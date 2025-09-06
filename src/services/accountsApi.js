@@ -1,8 +1,9 @@
 import supabase from "./supabase";
 
-export async function getAccounts({ userId, isAdmin } = {}) {
+export async function getAccounts({ userId, isAdmin, filterUserId } = {}) {
   let query = supabase.from("accounts").select("*");
-  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  if (filterUserId) query = query.eq("user_id", filterUserId);
+  else if (!isAdmin && userId) query = query.eq("user_id", userId);
   const { data, error } = await query;
   if (error) {
     console.log("error", error);
@@ -37,7 +38,7 @@ export async function updateAccount(id, updatedAccount) {
 
 export async function deleteAccount(id) {
   const { data, error } = await supabase.from("accounts").delete().eq("id", id);
-  
+
   if (error) throw new Error("An error occurred while deleting the account.");
   return data;
 }
