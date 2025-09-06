@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import MainNav from "./MainNav";
 import Logo from "./Logo";
+import AdminUserSwitcher from "../features/admin/AdminUserSwitcher";
 
 const StyledSideBar = styled.aside`
   background-color: var(--color-grey-0);
@@ -16,6 +17,7 @@ function SideBar() {
   return (
     <StyledSideBar>
       <Logo />
+      <AdminUserSwitcher />
       <MainNav />
     </StyledSideBar>
   );

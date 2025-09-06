@@ -7,11 +7,7 @@ import AccountAdminLayout from "../features/admin/AccountAdminLayout";
 import UsersAdminLayout from "../features/users/UsersAdminLayout";
 import { useUser } from "../features/auth/useUser";
 import AdminControls from "../features/admin/AdminControls";
-import {
-  AdminScopeProvider,
-  useAdminScope,
-} from "../features/admin/AdminScopeContext";
-import { useUsers } from "../features/users/useUsers";
+import { useAdminScope } from "../features/admin/AdminScopeContext";
 
 const AdminContainer = styled.div`
   background-color: var(--color-grey-50);
@@ -51,29 +47,12 @@ const StatusBar = styled.div`
   margin-bottom: 2.4rem;
 `;
 
-const ScopeBanner = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--color-grey-100);
-  border: 1px solid var(--color-grey-200);
-  border-radius: var(--border-radius-sm);
-  padding: 1.2rem 1.6rem;
-  margin-bottom: 1.6rem;
-`;
-
-const UserSelect = styled.select`
-  font-size: 1.4rem;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--color-grey-300);
-  border-radius: var(--border-radius-sm);
-`;
+// User scope selection is now handled globally in the Sidebar
 
 function AdminDashboardInner() {
   const [activeTab, setActiveTab] = useState("campaigns");
   const { user } = useUser();
-  const { data: users } = useUsers();
-  const { selectedUserId, setSelectedUserId, selectedUser } = useAdminScope();
+  const { selectedUserId } = useAdminScope();
 
   if (user.role !== "admin") {
     return <Heading>Access denied</Heading>;
@@ -87,29 +66,7 @@ function AdminDashboardInner() {
         <AdminControls />
       </StatusBar>
 
-      <ScopeBanner>
-        <div>
-          Viewing data for:{" "}
-          {selectedUser ? (
-            <strong>{selectedUser.username}</strong>
-          ) : (
-            <em>no user selected</em>
-          )}
-        </div>
-        <div>
-          <UserSelect
-            value={selectedUserId || ""}
-            onChange={(e) => setSelectedUserId(e.target.value || null)}
-          >
-            <option value="">Select user…</option>
-            {users?.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.username || u.email || u.id}
-              </option>
-            ))}
-          </UserSelect>
-        </div>
-      </ScopeBanner>
+      {/* View-as user selector moved to Sidebar */}
 
       <AdminContainer>
         <TabContainer>
@@ -151,11 +108,7 @@ function AdminDashboardInner() {
 }
 
 function AdminDashboard() {
-  return (
-    <AdminScopeProvider>
-      <AdminDashboardInner />
-    </AdminScopeProvider>
-  );
+  return <AdminDashboardInner />;
 }
 
 export default AdminDashboard;

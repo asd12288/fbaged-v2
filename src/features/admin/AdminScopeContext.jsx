@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react/prop-types */
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useUsers } from "../users/useUsers";
@@ -43,4 +45,9 @@ export function useAdminScope() {
   if (!ctx)
     throw new Error("useAdminScope must be used within AdminScopeProvider");
   return ctx;
+}
+
+// Optional variant that returns null if not wrapped – useful inside generic hooks
+export function useOptionalAdminScope() {
+  return useContext(AdminScopeCtx);
 }

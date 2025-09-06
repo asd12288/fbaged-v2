@@ -1,4 +1,9 @@
 import supabase from "./supabase";
+import {
+  FunctionsHttpError,
+  FunctionsRelayError,
+  FunctionsFetchError,
+} from "@supabase/supabase-js";
 
 export async function getAllUsers() {
   // Preferred: call secure SQL function exposed for admins
@@ -60,7 +65,22 @@ export async function createUser({ email, password, username, role = "user" }) {
     method: "POST",
     body: { email, password, username, role },
   });
-  if (error) throw new Error(error.message || "Failed to create user");
+  if (error) {
+    // Surface detailed error context from the Edge Function (if provided)
+    if (error instanceof FunctionsHttpError) {
+      try {
+        const ctx = await error.context.json();
+        throw new Error(ctx?.message || ctx?.error || JSON.stringify(ctx));
+  } catch {
+        // If parsing context fails, fall back to the generic message
+        throw new Error(error.message || "Failed to create user");
+      }
+    }
+    if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
+      throw new Error(error.message || "Failed to create user");
+    }
+    throw new Error("Failed to create user");
+  }
   return data;
 }
 
@@ -81,10 +101,23 @@ export async function updateUser(id, updates) {
 }
 
 export async function deleteUser(id) {
-  const { error } = await supabase.functions.invoke("admin-users", {
+  const { data, error } = await supabase.functions.invoke("admin-users", {
     method: "DELETE",
     body: { id },
   });
-  if (error) throw new Error(error.message || "Failed to delete user");
-  return true;
+  if (error) {
+    if (error instanceof FunctionsHttpError) {
+      try {
+        const ctx = await error.context.json();
+        throw new Error(ctx?.message || ctx?.error || JSON.stringify(ctx));
+  } catch {
+        throw new Error(error.message || "Failed to delete user");
+      }
+    }
+    if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
+      throw new Error(error.message || "Failed to delete user");
+    }
+    throw new Error("Failed to delete user");
+  }
+  return data ?? true;
 }

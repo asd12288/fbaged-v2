@@ -4,6 +4,17 @@ import DailyCampaignStats from "../features/campaigns/activeCampaignsTable/Daily
 import CampaignList from "../features/campaigns/fullCampaigns/CampaignList";
 import WarningBanner from "../features/dashboard/WarningBanner";
 import Heading from "../ui/Heading";
+import { useUser } from "../features/auth/useUser";
+import { useOptionalAdminScope } from "../features/admin/AdminScopeContext";
+
+const Notice = styled.div`
+  background-color: var(--color-yellow-100);
+  border: 1px solid var(--color-yellow-300);
+  color: var(--color-yellow-900);
+  padding: 1.2rem 1.6rem;
+  border-radius: var(--border-radius-sm);
+  margin-top: 1.2rem;
+`;
 
 const TabContainer = styled.div`
   display: flex;
@@ -35,6 +46,9 @@ const Container = styled.div`
 
 function Campagins() {
   const [activeTab, setActiveTab] = useState("stats");
+  const { user } = useUser();
+  const scope = useOptionalAdminScope();
+  const needsSelection = user?.role === "admin" && !scope?.selectedUserId;
 
   return (
     <>
@@ -54,6 +68,9 @@ function Campagins() {
       </TabContainer>
 
       <Container>
+        {needsSelection && (
+          <Notice>Select a user from the sidebar to view data.</Notice>
+        )}
         {activeTab === "stats" && <DailyCampaignStats />}
         {activeTab === "list" && <CampaignList />}
       </Container>

@@ -5,8 +5,8 @@ import SideBar from "./SideBar";
 import { useUser } from "../features/auth/useUser";
 import FullPageSpinner from "./FullPageSpinner";
 import { useMaintenance } from "../features/auth/useMaintenceMode";
-import { is } from "date-fns/locale";
 import MaintenancePage from "../pages/MaintenancePage";
+import { AdminScopeProvider } from "../features/admin/AdminScopeContext";
 
 const StyledAppLayout = styled.div`
   display: grid;
@@ -41,7 +41,7 @@ function AppLayout() {
     return <MaintenancePage />;
   }
 
-  return (
+  const Frame = (
     <StyledAppLayout>
       <Header />
       <SideBar />
@@ -53,6 +53,10 @@ function AppLayout() {
       </Main>
     </StyledAppLayout>
   );
+
+  if (user.role === "admin")
+    return <AdminScopeProvider>{Frame}</AdminScopeProvider>;
+  return Frame;
 }
 
 export default AppLayout;
