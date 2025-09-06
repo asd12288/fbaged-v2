@@ -71,12 +71,15 @@ export async function createUser({ email, password, username, role = "user" }) {
       try {
         const ctx = await error.context.json();
         throw new Error(ctx?.message || ctx?.error || JSON.stringify(ctx));
-  } catch {
+      } catch {
         // If parsing context fails, fall back to the generic message
         throw new Error(error.message || "Failed to create user");
       }
     }
-    if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
+    if (
+      error instanceof FunctionsRelayError ||
+      error instanceof FunctionsFetchError
+    ) {
       throw new Error(error.message || "Failed to create user");
     }
     throw new Error("Failed to create user");
@@ -110,11 +113,14 @@ export async function deleteUser(id) {
       try {
         const ctx = await error.context.json();
         throw new Error(ctx?.message || ctx?.error || JSON.stringify(ctx));
-  } catch {
+      } catch {
         throw new Error(error.message || "Failed to delete user");
       }
     }
-    if (error instanceof FunctionsRelayError || error instanceof FunctionsFetchError) {
+    if (
+      error instanceof FunctionsRelayError ||
+      error instanceof FunctionsFetchError
+    ) {
       throw new Error(error.message || "Failed to delete user");
     }
     throw new Error("Failed to delete user");
