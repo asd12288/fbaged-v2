@@ -1,7 +1,12 @@
 import supabase, { SUPABASE_URL } from "./supabase";
 
-export async function getCampaigns() {
-  const { data, error } = await supabase.from("campaigns").select("*");
+// Fetch campaigns. If filterUserId provided, always scope to that user.
+// Otherwise, regular users are scoped to their own rows; admins see all.
+export async function getCampaigns({ userId, filterUserId } = {}) {
+  let query = supabase.from("campaigns").select("*");
+  if (filterUserId) query = query.eq("user_id", filterUserId);
+  else if (userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
   if (error) {
     console.log(error);
     throw new Error(error.message);
@@ -9,11 +14,12 @@ export async function getCampaigns() {
   return data;
 }
 
-export async function getCampaign(id) {
-  const { data, error } = await supabase
-    .from("campaigns")
-    .select("*")
-    .eq("id", id);
+// Fetch single campaign. If filterUserId provided, enforce ownership filter.
+export async function getCampaign(id, { userId, filterUserId } = {}) {
+  let query = supabase.from("campaigns").select("*").eq("id", id);
+  if (filterUserId) query = query.eq("user_id", filterUserId);
+  else if (userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
 
   if (error) {
     console.log(error);

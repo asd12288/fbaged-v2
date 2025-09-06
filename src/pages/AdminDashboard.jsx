@@ -4,8 +4,10 @@ import Heading from "../ui/Heading";
 import CampaignsAdminLayout from "../features/admin/CampaignsAdminLayout";
 import BudgetAdminLayout from "../features/admin/BudgetAdminLayout";
 import AccountAdminLayout from "../features/admin/AccountAdminLayout";
+import UsersAdminLayout from "../features/users/UsersAdminLayout";
 import { useUser } from "../features/auth/useUser";
 import AdminControls from "../features/admin/AdminControls";
+import { useAdminScope } from "../features/admin/AdminScopeContext";
 
 const AdminContainer = styled.div`
   background-color: var(--color-grey-50);
@@ -27,9 +29,9 @@ const Tab = styled.button`
   font-size: 1.6rem;
   font-weight: 600;
   color: ${(props) =>
-    props.active ? "var(--color-brand-600)" : "var(--color-grey-500)"};
+    props.$active ? "var(--color-brand-600)" : "var(--color-grey-500)"};
   border-bottom: 2px solid
-    ${(props) => (props.active ? "var(--color-brand-600)" : "transparent")};
+    ${(props) => (props.$active ? "var(--color-brand-600)" : "transparent")};
   cursor: pointer;
   transition: all 0.3s;
 
@@ -45,9 +47,12 @@ const StatusBar = styled.div`
   margin-bottom: 2.4rem;
 `;
 
-function AdminDashboard() {
+// User scope selection is now handled globally in the Sidebar
+
+function AdminDashboardInner() {
   const [activeTab, setActiveTab] = useState("campaigns");
   const { user } = useUser();
+  const { selectedUserId } = useAdminScope();
 
   if (user.role !== "admin") {
     return <Heading>Access denied</Heading>;
@@ -61,34 +66,49 @@ function AdminDashboard() {
         <AdminControls />
       </StatusBar>
 
+      {/* View-as user selector moved to Sidebar */}
+
       <AdminContainer>
         <TabContainer>
           <Tab
-            active={activeTab === "campaigns"}
+            $active={activeTab === "campaigns"}
             onClick={() => setActiveTab("campaigns")}
           >
             Campaigns
           </Tab>
           <Tab
-            active={activeTab === "budget"}
+            $active={activeTab === "budget"}
             onClick={() => setActiveTab("budget")}
           >
             Budget
           </Tab>
           <Tab
-            active={activeTab === "accounts"}
+            $active={activeTab === "accounts"}
             onClick={() => setActiveTab("accounts")}
           >
             Accounts
           </Tab>
+          <Tab
+            $active={activeTab === "users"}
+            onClick={() => setActiveTab("users")}
+          >
+            Users
+          </Tab>
         </TabContainer>
 
-        {activeTab === "campaigns" && <CampaignsAdminLayout />}
-        {activeTab === "budget" && <BudgetAdminLayout />}
-        {activeTab === "accounts" && <AccountAdminLayout />}
+        {activeTab === "campaigns" && selectedUserId && (
+          <CampaignsAdminLayout />
+        )}
+        {activeTab === "budget" && selectedUserId && <BudgetAdminLayout />}
+        {activeTab === "accounts" && selectedUserId && <AccountAdminLayout />}
+        {activeTab === "users" && <UsersAdminLayout />}
       </AdminContainer>
     </>
   );
+}
+
+function AdminDashboard() {
+  return <AdminDashboardInner />;
 }
 
 export default AdminDashboard;

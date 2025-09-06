@@ -2,6 +2,7 @@ import { useState } from "react";
 import styled from "styled-components";
 import Table from "../../ui/Table";
 import { useCampaigns } from "../campaigns/useCampaigns";
+import { useAdminScope } from "./AdminScopeContext";
 import { HiPencil } from "react-icons/hi";
 import Button from "../../ui/Button";
 import Modal from "../../ui/Modal";
@@ -24,7 +25,7 @@ const AdminContainer = styled.div`
 
 const StyledForm = styled(Form)`
   padding: 2.4rem 4rem;
-  
+
   & h3 {
     margin-bottom: 2.4rem;
   }
@@ -43,15 +44,15 @@ function CampaignStatsForm({ campaign, onCloseModal }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    
+
     editCampaign(
-      { 
-        newCampaign: { 
+      {
+        newCampaign: {
           ...campaign,
           dailyResults: Number(dailyLeads),
-          dailyBudget: Number(dailyBudget)
+          dailyBudget: Number(dailyBudget),
         },
-        id: campaign.id 
+        id: campaign.id,
       },
       {
         onSuccess: () => {
@@ -60,7 +61,7 @@ function CampaignStatsForm({ campaign, onCloseModal }) {
         },
         onError: () => {
           toast.error("Could not update campaign stats");
-        }
+        },
       }
     );
   }
@@ -92,11 +93,22 @@ function CampaignStatsForm({ campaign, onCloseModal }) {
         </FormRowVertical>
       </FormGrid>
 
-      <div style={{ marginTop: '2.4rem', display: 'flex', justifyContent: 'flex-end' }}>
-        <Button type="reset" variant="secondary" onClick={onCloseModal} disabled={isEditing}>
+      <div
+        style={{
+          marginTop: "2.4rem",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Button
+          type="reset"
+          variant="secondary"
+          onClick={onCloseModal}
+          disabled={isEditing}
+        >
           Cancel
         </Button>
-        <Button style={{ marginLeft: '1.2rem' }} disabled={isEditing}>
+        <Button style={{ marginLeft: "1.2rem" }} disabled={isEditing}>
           {isEditing ? "Updating..." : "Update Stats"}
         </Button>
       </div>
@@ -109,20 +121,23 @@ CampaignStatsForm.propTypes = {
     id: PropTypes.string.isRequired,
     campaignName: PropTypes.string.isRequired,
     dailyResults: PropTypes.number,
-    dailyBudget: PropTypes.number
+    dailyBudget: PropTypes.number,
   }).isRequired,
-  onCloseModal: PropTypes.func.isRequired
+  onCloseModal: PropTypes.func.isRequired,
 };
 
 function DailyCampaignStatsAdmin() {
-  const { data: campaigns, isPending } = useCampaigns();
+  const { selectedUserId } = useAdminScope();
+  const { data: campaigns, isPending } = useCampaigns({
+    filterUserId: selectedUserId,
+  });
 
   if (isPending) return <Spinner />;
 
   return (
     <AdminContainer>
       <Heading as="h2">Manage Daily Campaign Stats</Heading>
-      <p style={{ marginBottom: '2.4rem', color: 'var(--color-grey-500)' }}>
+      <p style={{ marginBottom: "2.4rem", color: "var(--color-grey-500)" }}>
         Update the daily budget and leads for each campaign.
       </p>
 
@@ -151,9 +166,9 @@ function DailyCampaignStatsAdmin() {
                 </Modal.Open>
                 <Modal.Window>
                   {(onClose) => (
-                    <CampaignStatsForm 
-                      campaign={campaign} 
-                      onCloseModal={onClose} 
+                    <CampaignStatsForm
+                      campaign={campaign}
+                      onCloseModal={onClose}
                     />
                   )}
                 </Modal.Window>

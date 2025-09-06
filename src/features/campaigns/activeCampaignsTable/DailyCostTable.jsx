@@ -25,12 +25,12 @@ const TotalSection = styled.div`
   margin-top: 1.6rem;
   padding-top: 1.6rem;
   border-top: 1px solid var(--color-grey-200);
-  
+
   p {
     font-size: 1.6rem;
     font-weight: 600;
   }
-  
+
   span {
     margin-left: 0.8rem;
     color: var(--color-brand-600);
@@ -53,7 +53,7 @@ function DailyCostTable() {
     (sum, campaign) => sum + Number(campaign.dailyBudget || 0),
     0
   );
-  
+
   const totalDailyLeads = activeCampaigns?.reduce(
     (sum, campaign) => sum + Number(campaign.dailyResults || 0),
     0
@@ -72,10 +72,11 @@ function DailyCostTable() {
         <Table.Body
           data={activeCampaigns}
           render={(campaign) => {
-            const costPerLead = campaign.dailyResults > 0 
-              ? campaign.dailyBudget / campaign.dailyResults
-              : 0;
-              
+            const costPerLead =
+              campaign.dailyResults > 0
+                ? campaign.dailyBudget / campaign.dailyResults
+                : 0;
+
             return (
               <Table.Row key={campaign.id}>
                 <div>{campaign.campaignName}</div>
@@ -87,10 +88,14 @@ function DailyCostTable() {
           }}
         />
       </Table>
-      
+
       <TotalSection>
-        <p>Total Daily Cost: <span>{formatCurrency(totalDailyCost)}</span></p>
-        <p style={{ marginLeft: "2rem" }}>Total Daily Leads: <span>{totalDailyLeads}</span></p>
+        <p>
+          Total Daily Cost: <span>{formatCurrency(totalDailyCost)}</span>
+        </p>
+        <p style={{ marginLeft: "2rem" }}>
+          Total Daily Leads: <span>{totalDailyLeads}</span>
+        </p>
       </TotalSection>
     </TableContainer>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
@@ -12,6 +13,7 @@ import Spinner from "../../ui/Spinner";
 import toast from "react-hot-toast";
 import { HiCurrencyDollar, HiPhotograph, HiUsers, HiEye } from "react-icons/hi";
 import { ModalContext } from "../../ui/Modal";
+import { useAdminScope } from "./AdminScopeContext";
 
 const FormContainer = styled.form`
   display: grid;
@@ -132,6 +134,7 @@ function EditCreateCampaignForm({ id }) {
     enabled: !!id,
   });
   const { isPending: isEditing, editCampaign } = useEditCampaign();
+  const { selectedUserId } = useAdminScope();
 
   const {
     register,
@@ -200,8 +203,17 @@ function EditCreateCampaignForm({ id }) {
       typeof data.image === "string" ? data.image : data.image?.[0] ?? null;
 
     // If id is provided, update existing campaign; otherwise, create a new one
+    if (!id && !selectedUserId) {
+      toast.error("Select a user first");
+      return;
+    }
+
+    const payload = !id
+      ? { ...finalData, image, user_id: selectedUserId }
+      : { ...finalData, image };
+
     editCampaign(
-      { newCampaign: { ...finalData, image }, id },
+      { newCampaign: payload, id },
       {
         onSuccess: () => {
           toast.success(

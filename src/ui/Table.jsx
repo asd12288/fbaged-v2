@@ -109,11 +109,18 @@ function Header({ children, type }) {
   return (
     <StyledThead>
       <StyledTr type={headerType}>
-        {React.Children.map(children, (child, i) => (
-          <StyledTh key={i} type={headerType}>
-            {child}
-          </StyledTh>
-        ))}
+        {React.Children.map(children, (child, i) => {
+          // If consumer passed a <th>, render its children only to avoid <th> inside <th>
+          const content =
+            React.isValidElement(child) && child.type === "th"
+              ? child.props.children
+              : child;
+          return (
+            <StyledTh key={i} type={headerType}>
+              {content}
+            </StyledTh>
+          );
+        })}
       </StyledTr>
     </StyledThead>
   );

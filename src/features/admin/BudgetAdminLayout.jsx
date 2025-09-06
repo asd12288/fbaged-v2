@@ -4,6 +4,7 @@ import DepositAddAdminForm from "./DepositAddAdminForm";
 import DepositEditAdmin from "./DepositEditAdmin";
 import GridBox from "../../ui/GridBox";
 import { useDeposits } from "../budget/useDeposits";
+import { useAdminScope } from "./AdminScopeContext";
 
 const StyledLayout = styled.div`
   grid-template-columns: 1fr 1.5fr;
@@ -40,7 +41,10 @@ const SummaryCard = styled.div`
 `;
 
 function BudgetAdminLayout() {
-  const { data: deposits, isPending } = useDeposits();
+  const { selectedUserId } = useAdminScope();
+  const { data: deposits, isPending } = useDeposits({
+    filterUserId: selectedUserId,
+  });
 
   // Calculate summary statistics
   let totalDeposits = 0;

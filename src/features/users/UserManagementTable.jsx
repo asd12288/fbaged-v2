@@ -1,12 +1,11 @@
 import { useState } from "react";
 import Table from "../../ui/Table";
-import { useAccounts } from "../budget/useAccounts";
-import { useAdminScope } from "./AdminScopeContext";
-import AccountEditRowAdmin from "./AccountEditRowAdmin";
+import { useUsers } from "./useUsers";
+import { useUser } from "../auth/useUser";
+import UserRow from "./UserRow";
 import styled from "styled-components";
 import Spinner from "../../ui/Spinner";
 import { HiSearch } from "react-icons/hi";
-import { formatCurrency } from "../../utils/helpers";
 
 const SearchContainer = styled.div`
   display: flex;
@@ -82,35 +81,34 @@ const EmptyState = styled.div`
   }
 `;
 
-function AccountEditAdmin() {
-  const { selectedUserId } = useAdminScope();
-  const { data: accounts, isPending } = useAccounts({
-    filterUserId: selectedUserId,
-  });
+function UserManagementTable() {
+  const { data: users, isPending } = useUsers();
+  const { user: currentUser } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter accounts based on search query
-  const filteredAccounts =
-    searchQuery.trim() === ""
-      ? accounts
-      : accounts?.filter((account) =>
-          account.nameAccount.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+  // Filter users based on search query
+  const filteredUsers = (users || [])
+    // Exclude current user just in case backend didn't
+    .filter((u) => (currentUser?.id ? u.id !== currentUser.id : true))
+    // Apply search
+    .filter((user) => {
+      if (searchQuery.trim() === "") return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (user.username || "").toLowerCase().includes(q) ||
+        (user.email || "").toLowerCase().includes(q)
+      );
+    });
 
   // Calculate summary statistics
-  let totalAccounts = 0;
-  let totalCost = 0;
+  let totalUsers = 0;
+  let adminCount = 0;
+  let userCount = 0;
 
-  if (!isPending && accounts) {
-    totalAccounts = accounts.reduce(
-      (sum, account) => sum + Number(account.numAccounts),
-      0
-    );
-    totalCost = accounts.reduce(
-      (sum, account) =>
-        sum + Number(account.numAccounts) * Number(account.cost),
-      0
-    );
+  if (!isPending && filteredUsers) {
+    totalUsers = filteredUsers.length;
+    adminCount = filteredUsers.filter((user) => user.role === "admin").length;
+    userCount = filteredUsers.filter((user) => user.role === "user").length;
   }
 
   if (isPending) return <Spinner />;
@@ -119,18 +117,18 @@ function AccountEditAdmin() {
     <div>
       <SummaryContainer>
         <SummaryCard color="var(--color-brand-600)">
-          <h3>Total Accounts</h3>
-          <p>{totalAccounts}</p>
+          <h3>Total Users</h3>
+          <p>{totalUsers}</p>
+        </SummaryCard>
+
+        <SummaryCard color="var(--color-red-700)">
+          <h3>Admins</h3>
+          <p>{adminCount}</p>
         </SummaryCard>
 
         <SummaryCard color="var(--color-green-700)">
-          <h3>Account Types</h3>
-          <p>{accounts.length}</p>
-        </SummaryCard>
-
-        <SummaryCard>
-          <h3>Total Cost</h3>
-          <p>{formatCurrency(totalCost)}</p>
+          <h3>Regular Users</h3>
+          <p>{userCount}</p>
         </SummaryCard>
       </SummaryContainer>
 
@@ -139,35 +137,33 @@ function AccountEditAdmin() {
           <HiSearch />
           <SearchInput
             type="text"
-            placeholder="Search accounts..."
+            placeholder="Search users by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </SearchWrapper>
       </SearchContainer>
 
-      {filteredAccounts.length === 0 ? (
+      {filteredUsers?.length === 0 ? (
         <EmptyState>
-          <h4>No accounts found</h4>
+          <h4>No users found</h4>
           <p>
             {searchQuery
               ? "Try adjusting your search query"
-              : "Add some accounts to get started"}
+              : "Create some users to get started"}
           </p>
         </EmptyState>
       ) : (
-        <Table columns="2fr 1fr 1fr 1fr" type="compact">
+        <Table columns="2fr 1fr 1.5fr 1fr" type="compact">
           <Table.Header>
-            <th>Account name</th>
-            <th>Number of accounts</th>
-            <th>Cost</th>
+            <th>User</th>
+            <th>Role</th>
+            <th>Created</th>
             <th>Actions</th>
           </Table.Header>
           <Table.Body
-            data={filteredAccounts}
-            render={(account) => (
-              <AccountEditRowAdmin key={account.id} account={account} />
-            )}
+            data={filteredUsers}
+            render={(user) => <UserRow key={user.id} user={user} />}
           />
         </Table>
       )}
@@ -175,4 +171,4 @@ function AccountEditAdmin() {
   );
 }
 
-export default AccountEditAdmin;
+export default UserManagementTable;

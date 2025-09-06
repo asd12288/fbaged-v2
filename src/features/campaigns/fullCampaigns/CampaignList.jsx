@@ -28,9 +28,9 @@ const StatusFilter = styled.select`
   box-shadow: var(--shadow-sm);
 `;
 
-function CampaignList() {
+function CampaignList({ filterUserId } = {}) {
   const [statusFilter, setStatusFilter] = useState("Active");
-  const { isPending, data: campaigns } = useCampaigns();
+  const { isPending, data: campaigns } = useCampaigns({ filterUserId });
 
   if (isPending) return <Spinner />;
 

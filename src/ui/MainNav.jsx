@@ -7,7 +7,7 @@ import {
   HiOutlineUser,
 } from "react-icons/hi2";
 import { useUser } from "../features/auth/useUser";
-import FullPageSpinner from "./FullPageSpinner";
+// removed unused FullPageSpinner
 
 const NavList = styled.ul`
   display: flex;
@@ -54,7 +54,7 @@ const StyledNavLink = styled(NavLink)`
 `;
 
 function MainNav() {
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
 
   if (!user) return null;
 
@@ -62,26 +62,38 @@ function MainNav() {
     <nav>
       <NavList>
         <li>
-          <StyledNavLink to="/dashboard" activeClassName="active">
+          <StyledNavLink
+            to="/dashboard"
+            className={({ isActive }) => (isActive ? "active" : undefined)}
+          >
             <HiOutlineHome />
             <span>Dasboard</span>
           </StyledNavLink>
         </li>
         <li>
-          <StyledNavLink to="/campaigns" activeClassName="active">
+          <StyledNavLink
+            to="/campaigns"
+            className={({ isActive }) => (isActive ? "active" : undefined)}
+          >
             <HiMiniCursorArrowRays />
             <span>Campaigns</span>
           </StyledNavLink>
         </li>
         <li>
-          <StyledNavLink to="/budget" activeClassName="active">
+          <StyledNavLink
+            to="/budget"
+            className={({ isActive }) => (isActive ? "active" : undefined)}
+          >
             <HiOutlineBanknotes />
             <span>Budget</span>
           </StyledNavLink>
         </li>
         {user.role === "admin" ? (
           <li>
-            <StyledNavLink to="/admin-dashboard" activeClassName="active">
+            <StyledNavLink
+              to="/admin-dashboard"
+              className={({ isActive }) => (isActive ? "active" : undefined)}
+            >
               <HiOutlineUser />
               <span>Admin</span>
             </StyledNavLink>

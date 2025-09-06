@@ -4,6 +4,7 @@ import Table from "../../ui/Table";
 import { useEditDeposit } from "../budget/useEditDeposit";
 import { useDeleteDeposit } from "../budget/useDeleteDeposit";
 import { useDeposits } from "../budget/useDeposits";
+import { useAdminScope } from "./AdminScopeContext";
 import Button from "../../ui/Button";
 import { formatCurrency } from "../../utils/helpers";
 import styled from "styled-components";
@@ -59,7 +60,10 @@ const ConfirmButtonContainer = styled.div`
 `;
 
 function DepositEditAdmin() {
-  const { data: deposits, isPending } = useDeposits();
+  const { selectedUserId } = useAdminScope();
+  const { data: deposits, isPending } = useDeposits({
+    filterUserId: selectedUserId,
+  });
   const { editDeposit, isEditing } = useEditDeposit();
   const { removeDeposit, isDeleting } = useDeleteDeposit();
   const [editingId, setEditingId] = useState(null);

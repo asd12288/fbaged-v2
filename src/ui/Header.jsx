@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import UserAvatar from "../features/auth/UserAvatar";
 import HeaderMenu from "./HeaderMenu";
+import AdminHeaderIndicator from "../features/admin/AdminHeaderIndicator";
 
 const StyleHeader = styled.header`
   background-color: var(--color-grey-0);
@@ -15,6 +16,7 @@ const StyleHeader = styled.header`
 function Header() {
   return (
     <StyleHeader>
+      <AdminHeaderIndicator />
       <UserAvatar />
       <HeaderMenu />
     </StyleHeader>

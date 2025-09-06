@@ -5,6 +5,7 @@ import Input from "../../ui/Input";
 import Button from "../../ui/Button";
 import { useForm } from "react-hook-form";
 import useAddAccount from "../budget/useAddAccount";
+import { useAdminScope } from "./AdminScopeContext";
 import SpinnerMini from "../../ui/SpinnerMini";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -52,6 +53,7 @@ const SuccessMessage = styled.div`
 
 function AccountAddAdminForm() {
   const { addAccount, isAdding } = useAddAccount();
+  const { selectedUserId } = useAdminScope();
   const [showSuccess, setShowSuccess] = useState(false);
 
   const {
@@ -68,9 +70,14 @@ function AccountAddAdminForm() {
       cost: Number(data.cost),
     };
 
+    if (!selectedUserId) {
+      toast.error("Select a user first");
+      return;
+    }
+
     addAccount(
       {
-        newAccount: formattedData,
+        newAccount: { ...formattedData, user_id: selectedUserId },
       },
       {
         onSuccess: () => {
