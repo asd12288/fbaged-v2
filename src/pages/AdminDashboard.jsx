@@ -4,6 +4,7 @@ import Heading from "../ui/Heading";
 import CampaignsAdminLayout from "../features/admin/CampaignsAdminLayout";
 import BudgetAdminLayout from "../features/admin/BudgetAdminLayout";
 import AccountAdminLayout from "../features/admin/AccountAdminLayout";
+import UsersAdminLayout from "../features/users/UsersAdminLayout";
 import { useUser } from "../features/auth/useUser";
 import AdminControls from "../features/admin/AdminControls";
 
@@ -81,11 +82,18 @@ function AdminDashboard() {
           >
             Accounts
           </Tab>
+          <Tab
+            active={activeTab === "users"}
+            onClick={() => setActiveTab("users")}
+          >
+            Users
+          </Tab>
         </TabContainer>
 
         {activeTab === "campaigns" && <CampaignsAdminLayout />}
         {activeTab === "budget" && <BudgetAdminLayout />}
         {activeTab === "accounts" && <AccountAdminLayout />}
+        {activeTab === "users" && <UsersAdminLayout />}
       </AdminContainer>
     </>
   );

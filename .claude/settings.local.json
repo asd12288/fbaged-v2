@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(supabase inspect:*)",
+      "Bash(supabase status:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
