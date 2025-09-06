@@ -1,7 +1,10 @@
 import supabase from "./supabase";
 
-export async function getDeposits() {
-  const { data, error } = await supabase.from("deposits").select("*");
+// For regular users, restrict to their own deposits; admins see all
+export async function getDeposits({ userId, isAdmin } = {}) {
+  let query = supabase.from("deposits").select("*");
+  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
   if (error) {
     console.log("depositsApi.js: getDeposits error", error.message);
     throw new Error(error.message);
@@ -9,6 +12,7 @@ export async function getDeposits() {
   return data;
 }
 
+// Admin creates must include user_id of the target user; users typically cannot write.
 export async function createDeposit(deposit) {
   const { data, error } = await supabase.from("deposits").insert([deposit]);
   if (error) {

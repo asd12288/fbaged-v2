@@ -1,7 +1,9 @@
 import supabase from "./supabase";
 
-export async function getAccounts() {
-  const { data, error } = await supabase.from("accounts").select("*");
+export async function getAccounts({ userId, isAdmin } = {}) {
+  let query = supabase.from("accounts").select("*");
+  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
   if (error) {
     console.log("error", error);
     throw new Error("An error occurred while fetching accounts.");

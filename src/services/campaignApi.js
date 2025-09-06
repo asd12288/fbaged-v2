@@ -1,7 +1,10 @@
 import supabase, { SUPABASE_URL } from "./supabase";
 
-export async function getCampaigns() {
-  const { data, error } = await supabase.from("campaigns").select("*");
+// Fetch campaigns. For regular users, limit to their own rows; admins see all.
+export async function getCampaigns({ userId, isAdmin } = {}) {
+  let query = supabase.from("campaigns").select("*");
+  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
   if (error) {
     console.log(error);
     throw new Error(error.message);
@@ -9,11 +12,11 @@ export async function getCampaigns() {
   return data;
 }
 
-export async function getCampaign(id) {
-  const { data, error } = await supabase
-    .from("campaigns")
-    .select("*")
-    .eq("id", id);
+// Fetch single campaign, scoped for regular users
+export async function getCampaign(id, { userId, isAdmin } = {}) {
+  let query = supabase.from("campaigns").select("*").eq("id", id);
+  if (!isAdmin && userId) query = query.eq("user_id", userId);
+  const { data, error } = await query;
 
   if (error) {
     console.log(error);
