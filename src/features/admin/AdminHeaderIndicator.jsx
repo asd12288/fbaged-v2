@@ -27,8 +27,11 @@ function AdminHeaderIndicator() {
 
   return (
     <Indicator>
-      Viewing as: {selectedUser ? (
-        <UserName>{selectedUser.username || selectedUser.email || selectedUser.id}</UserName>
+      Viewing as:{" "}
+      {selectedUser ? (
+        <UserName>
+          {selectedUser.username || selectedUser.email || selectedUser.id}
+        </UserName>
       ) : (
         <UserName>All Users</UserName>
       )}

@@ -67,7 +67,7 @@ function MainNav() {
             className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             <HiOutlineHome />
-            <span>Dasboard</span>
+            <span>Dashboard</span>
           </StyledNavLink>
         </li>
         <li>

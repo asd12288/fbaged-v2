@@ -26,7 +26,7 @@ const Select = styled.select`
   border-radius: var(--border-radius-sm);
   background-color: var(--color-grey-50);
   color: var(--color-grey-700);
-  
+
   &:focus {
     outline: none;
     border-color: var(--color-brand-500);

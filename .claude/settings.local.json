@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(supabase inspect:*)",
-      "Bash(supabase status:*)"
+      "Bash(supabase status:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
