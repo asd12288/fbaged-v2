@@ -91,3 +91,6 @@ web_modules/
 
 # Git worktrees
 .worktrees/
+
+# Local Netlify folder
+.netlify
