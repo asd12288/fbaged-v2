@@ -68,6 +68,53 @@ INSERT INTO auth.users (
 ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
+-- auth identity + password compatibility fix
+-- Ensures local password auth works consistently after `supabase db reset`
+-- -----------------------------------------------------------------------------
+
+-- Keep seeded local password deterministic for all dev users
+UPDATE auth.users
+SET encrypted_password = crypt('password123', gen_salt('bf')),
+    email_confirmed_at = COALESCE(email_confirmed_at, now()),
+    updated_at = now()
+WHERE email IN ('admin@fbaged.dev', 'alice@fbaged.dev', 'bob@fbaged.dev');
+
+-- GoTrue can fail password login if these token fields are NULL in some local setups
+UPDATE auth.users
+SET confirmation_token = COALESCE(confirmation_token, ''),
+    recovery_token = COALESCE(recovery_token, ''),
+    email_change_token_new = COALESCE(email_change_token_new, ''),
+    email_change_token_current = COALESCE(email_change_token_current, ''),
+    reauthentication_token = COALESCE(reauthentication_token, ''),
+    phone_change_token = COALESCE(phone_change_token, ''),
+    phone_change = COALESCE(phone_change, ''),
+    email_change = COALESCE(email_change, ''),
+    updated_at = now()
+WHERE email IN ('admin@fbaged.dev', 'alice@fbaged.dev', 'bob@fbaged.dev');
+
+-- Supabase password login requires auth.identities rows for provider='email'
+INSERT INTO auth.identities (
+  provider_id,
+  user_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+SELECT
+  u.id::text,
+  u.id,
+  jsonb_build_object('sub', u.id::text, 'email', u.email),
+  'email',
+  now(),
+  now(),
+  now()
+FROM auth.users u
+WHERE u.email IN ('admin@fbaged.dev', 'alice@fbaged.dev', 'bob@fbaged.dev')
+ON CONFLICT (provider_id, provider) DO NOTHING;
+
+-- -----------------------------------------------------------------------------
 -- public.profiles
 -- -----------------------------------------------------------------------------
 
