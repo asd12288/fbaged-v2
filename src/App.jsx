@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Campagins from "./pages/Campagins";
 import Budget from "./pages/Budget";
 import AdminDashboard from "./pages/AdminDashboard";
+import MyLeads from "./pages/MyLeads";
 import AppLayout from "./ui/AppLayout";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -43,6 +44,7 @@ function AppContent() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="campaigns" element={<Campagins />} />
           <Route path="budget" element={<Budget />} />
+          <Route path="my-leads" element={<MyLeads />} />
           <Route path="admin-dashboard" element={<AdminDashboard />} />
 
           <Route path="*" element={<NotFoundPage />} />

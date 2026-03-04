@@ -88,6 +88,15 @@ function MainNav() {
             <span>Budget</span>
           </StyledNavLink>
         </li>
+        <li>
+          <StyledNavLink
+            to="/my-leads"
+            className={({ isActive }) => (isActive ? "active" : undefined)}
+          >
+            <HiMiniCursorArrowRays />
+            <span>My Leads</span>
+          </StyledNavLink>
+        </li>
         {user.role === "admin" ? (
           <li>
             <StyledNavLink
