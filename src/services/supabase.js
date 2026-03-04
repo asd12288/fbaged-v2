@@ -1,9 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
-export const SUPABASE_URL = "https://padrhwykbrioohogickg.supabase.co";
 
-const SUPABASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhZHJod3lrYnJpb29ob2dpY2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5NzkxMjIsImV4cCI6MjA1MzU1NTEyMn0.y8l5gJMslTo-t8PzMzrNYA_ZnlyV8FdaWAKMkSf0Y8g";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Copy .env.example to .env.local and fill in VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."
+  );
+}
 
+export const SUPABASE_URL = supabaseUrl;
+const supabase = createClient(supabaseUrl, supabaseKey);
 export default supabase;
