@@ -18,7 +18,10 @@ INSERT INTO auth.users (
   created_at,
   updated_at,
   aud,
-  role
+  role,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  is_super_admin
 ) VALUES
   (
     '00000000-0000-0000-0000-000000000001',
@@ -29,7 +32,10 @@ INSERT INTO auth.users (
     now(),
     now(),
     'authenticated',
-    'authenticated'
+    'authenticated',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    false
   ),
   (
     '00000000-0000-0000-0000-000000000002',
@@ -40,7 +46,10 @@ INSERT INTO auth.users (
     now(),
     now(),
     'authenticated',
-    'authenticated'
+    'authenticated',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    false
   ),
   (
     '00000000-0000-0000-0000-000000000003',
@@ -51,9 +60,12 @@ INSERT INTO auth.users (
     now(),
     now(),
     'authenticated',
-    'authenticated'
+    'authenticated',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    false
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- public.profiles
@@ -63,7 +75,7 @@ INSERT INTO public.profiles (id, created_at, role, username) VALUES
   ('00000000-0000-0000-0000-000000000001', now(), 'admin', 'Admin'),
   ('00000000-0000-0000-0000-000000000002', now(), 'user',  'Alice'),
   ('00000000-0000-0000-0000-000000000003', now(), 'user',  'Bob')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- public.campaigns
@@ -72,12 +84,13 @@ ON CONFLICT DO NOTHING;
 
 -- Alice's campaigns
 INSERT INTO public.campaigns (
-  created_at, "campaignName", status, "dailyBudget",
+  id, created_at, "campaignName", status, "dailyBudget",
   results, reaches, impressions, "linkClicks",
   cpm, cpc, ctr, clicks, "costPerResults", "amountSpent",
   image, "dailyResults", user_id
 ) VALUES
   (
+    1,
     '2024-06-01 08:00:00+00',
     'Summer Sale - Retargeting',
     'Active',
@@ -88,6 +101,7 @@ INSERT INTO public.campaigns (
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    2,
     '2024-08-15 10:00:00+00',
     'Brand Awareness Q3',
     'Learning',
@@ -98,6 +112,7 @@ INSERT INTO public.campaigns (
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    3,
     '2024-11-20 09:30:00+00',
     'Black Friday Promo',
     'Paused',
@@ -107,16 +122,17 @@ INSERT INTO public.campaigns (
     NULL, 0,
     '00000000-0000-0000-0000-000000000002'
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- Bob's campaigns
 INSERT INTO public.campaigns (
-  created_at, "campaignName", status, "dailyBudget",
+  id, created_at, "campaignName", status, "dailyBudget",
   results, reaches, impressions, "linkClicks",
   cpm, cpc, ctr, clicks, "costPerResults", "amountSpent",
   image, "dailyResults", user_id
 ) VALUES
   (
+    4,
     '2024-05-10 11:00:00+00',
     'Lead Gen - Real Estate',
     'Active',
@@ -127,6 +143,7 @@ INSERT INTO public.campaigns (
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    5,
     '2024-09-03 07:45:00+00',
     'Product Launch Campaign',
     'Active',
@@ -137,6 +154,7 @@ INSERT INTO public.campaigns (
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    6,
     '2025-01-12 13:00:00+00',
     'New Year Discount Push',
     'Paused',
@@ -146,7 +164,7 @@ INSERT INTO public.campaigns (
     NULL, 0,
     '00000000-0000-0000-0000-000000000003'
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- public.accounts
@@ -154,16 +172,18 @@ ON CONFLICT DO NOTHING;
 -- -----------------------------------------------------------------------------
 
 INSERT INTO public.accounts (
-  created_at, "nameAccount", "numAccounts", cost, "totalCost", user_id
+  id, created_at, "nameAccount", "numAccounts", cost, "totalCost", user_id
 ) VALUES
   -- Alice's accounts
   (
+    1,
     '2024-01-15 10:00:00+00',
     'Facebook Ads - Main',
     3, 350, 1050,
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    2,
     '2024-03-20 10:00:00+00',
     'Google Ads - Search',
     2, 450, 900,
@@ -171,18 +191,20 @@ INSERT INTO public.accounts (
   ),
   -- Bob's accounts
   (
+    3,
     '2024-02-01 10:00:00+00',
     'Facebook Ads - Real Estate',
     4, 300, 1200,
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    4,
     '2024-04-10 10:00:00+00',
     'Google Ads - Display',
     1, 500, 500,
     '00000000-0000-0000-0000-000000000003'
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- public.deposits
@@ -190,62 +212,71 @@ ON CONFLICT DO NOTHING;
 -- -----------------------------------------------------------------------------
 
 INSERT INTO public.deposits (
-  created_at, amount, "dateAdded", type, user_id
+  id, created_at, amount, "dateAdded", type, user_id
 ) VALUES
   -- Alice's deposits
   (
+    1,
     '2024-01-10 09:00:00+00',
     20000.00, '2024-01-10', 'bank_transfer',
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    2,
     '2024-03-05 14:30:00+00',
     15000.00, '2024-03-05', 'credit_card',
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    3,
     '2024-06-18 11:00:00+00',
     25000.00, '2024-06-18', 'bank_transfer',
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    4,
     '2024-10-22 16:00:00+00',
     10000.00, '2024-10-22', 'credit_card',
     '00000000-0000-0000-0000-000000000002'
   ),
   (
+    5,
     '2025-01-08 09:30:00+00',
     30000.00, '2025-01-08', 'bank_transfer',
     '00000000-0000-0000-0000-000000000002'
   ),
   -- Bob's deposits
   (
+    6,
     '2024-02-14 10:00:00+00',
     12000.00, '2024-02-14', 'bank_transfer',
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    7,
     '2024-05-01 15:00:00+00',
     8000.00, '2024-05-01', 'credit_card',
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    8,
     '2024-08-30 12:00:00+00',
     18000.00, '2024-08-30', 'bank_transfer',
     '00000000-0000-0000-0000-000000000003'
   ),
   (
+    9,
     '2024-12-15 10:00:00+00',
     5000.00, '2024-12-15', 'credit_card',
     '00000000-0000-0000-0000-000000000003'
   )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- public.settings
 -- 1 row
 -- -----------------------------------------------------------------------------
 
-INSERT INTO public.settings (created_at, "isMaintenanceMode") VALUES
-  (now(), false)
-ON CONFLICT DO NOTHING;
+INSERT INTO public.settings (id, created_at, "isMaintenanceMode") VALUES
+  (1, now(), false)
+ON CONFLICT (id) DO NOTHING;
