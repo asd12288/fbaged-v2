@@ -11,6 +11,7 @@ import AdminLeadImportsTable from "../AdminLeadImportsTable";
 const mockUseAdminScope = vi.fn();
 const mockUseLeadBatches = vi.fn();
 const mockDownloadLeadBatchCsv = vi.fn();
+const mockDownloadStoredLeadFile = vi.fn();
 const mockGetLeadBatchDuplicateRows = vi.fn();
 const mockDownloadDuplicateLeadsCsv = vi.fn();
 
@@ -24,6 +25,7 @@ vi.mock("../../hooks/useLeadBatches", () => ({
 
 vi.mock("../../../../services/leadsApi", () => ({
   downloadLeadBatchCsv: (...args) => mockDownloadLeadBatchCsv(...args),
+  downloadStoredLeadFile: (...args) => mockDownloadStoredLeadFile(...args),
   getLeadBatchDuplicateRows: (...args) => mockGetLeadBatchDuplicateRows(...args),
   downloadDuplicateLeadsCsv: (...args) => mockDownloadDuplicateLeadsCsv(...args),
 }));
@@ -130,5 +132,38 @@ describe("AdminLeadImportsTable", () => {
         { filename: "april-duplicates-batch-12.csv" }
       );
     });
+  });
+
+  it("prefers stored clean file when batch has storage path", async () => {
+    mockUseAdminScope.mockReturnValue({ selectedUserId: "u1" });
+    mockUseLeadBatches.mockReturnValue({
+      data: [
+        {
+          id: 14,
+          created_at: "2026-03-05T10:00:00Z",
+          source_filename: "may.csv",
+          inserted_rows: 3,
+          duplicate_rows: 0,
+          invalid_rows: 0,
+          campaign_id: 9,
+          campaign: { campaignName: "Campaign C" },
+          clean_file_path: "users/u1/batches/14/clean.csv",
+          duplicate_file_path: null,
+        },
+      ],
+      isPending: false,
+    });
+
+    render(<AdminLeadImportsTable />);
+
+    fireEvent.click(screen.getByRole("button", { name: /download new leads/i }));
+
+    await waitFor(() => {
+      expect(mockDownloadStoredLeadFile).toHaveBeenCalledWith({
+        path: "users/u1/batches/14/clean.csv",
+        filename: "may-batch-14.csv",
+      });
+    });
+    expect(mockDownloadLeadBatchCsv).not.toHaveBeenCalled();
   });
 });

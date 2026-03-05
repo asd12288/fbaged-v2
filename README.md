@@ -19,10 +19,11 @@ The app now includes a leads import and distribution flow:
 - After confirm import, admin can download:
   - Imported (new) leads CSV
   - Duplicate leads CSV (separate file, includes duplicate reason)
+- For new imports, both generated CSVs are also stored in the private Supabase Storage bucket `lead-import-files`.
 - Admin Leads now has:
   - `Upload` tab for new imports
   - `Imports` tab for historical batch downloads
-- Historical duplicates download from `Imports` also includes original row columns + duplicate reason.
+- Historical downloads prefer the stored file when present and fall back to DB-generated export for older batches.
 
 ### Local verification
 
@@ -32,15 +33,4 @@ The app now includes a leads import and distribution flow:
 
 ### Large Initial Imports (20k+ rows)
 
-For one-time bootstrap imports, avoid browser JSON upload. Keep the regular UI flow for recurring small files.
-
-- Use Postgres `COPY`/`\\copy` into a staging table.
-- Run server-side SQL to:
-  - normalize emails
-  - detect duplicates inside the file
-  - detect duplicates against existing leads for the selected `assigned_user_id`
-  - insert only clean rows into `public.leads`
-  - store duplicate rows in `public.lead_import_rejections`
-- Produce two files for admin workflow:
-  - clean leads file (new rows only)
-  - duplicate leads file (duplicate rows + reason)
+For one-time bootstrap imports, do not send the entire file through the browser JSON flow. Use the chunked admin workflow in [docs/runbooks/leads-bootstrap-import.md](/Users/ilanchelly/Desktop/fbaged-v2/docs/runbooks/leads-bootstrap-import.md).

@@ -1,4 +1,2 @@
--- Fix accounts totalCost calculation
-UPDATE accounts 
-SET "totalCost" = "numAccounts" * cost 
-WHERE "totalCost" IS NULL;;
+-- Historical remote migration placeholder.
+-- This change is already captured in 20250101000000_schema.sql.

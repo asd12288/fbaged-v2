@@ -4,6 +4,9 @@ vi.mock("../../../../services/supabase", () => ({
   default: {
     rpc: vi.fn(),
     from: vi.fn(),
+    storage: {
+      from: vi.fn(),
+    },
   },
 }));
 
@@ -11,6 +14,7 @@ import supabase from "../../../../services/supabase";
 import {
   buildLeadsCsvText,
   confirmLeadImport,
+  downloadStoredLeadFile,
   downloadLeadBatchCsv,
   downloadAcceptedLeadsCsv,
   downloadDuplicateLeadsCsv,
@@ -22,10 +26,15 @@ import {
 describe("leadsApi", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    supabase.rpc.mockReset();
+    supabase.from.mockReset();
+    supabase.storage.from.mockReset();
+    global.fetch = vi.fn();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    delete global.fetch;
   });
 
   it("calls preview rpc with payload", async () => {
@@ -60,6 +69,30 @@ describe("leadsApi", () => {
       },
       error: null,
     });
+    const leadsQuery = {
+      eq: vi.fn(() => leadsQuery),
+      order: vi.fn(() => leadsQuery),
+      range: vi.fn().mockResolvedValue({
+        data: [{ email: "new@example.com", payload_json: { name: "New" } }],
+        error: null,
+      }),
+    };
+    const batchUpdate = vi.fn().mockResolvedValue({
+      data: {
+        clean_file_path: "users/u1/batches/9/clean.csv",
+        duplicate_file_path: "users/u1/batches/9/duplicates.csv",
+      },
+      error: null,
+    });
+    const batchEq = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({ single: batchUpdate }),
+    });
+    const batchUpdateChain = vi.fn().mockReturnValue({ eq: batchEq });
+    const storageUpload = vi.fn().mockResolvedValue({ error: null });
+    supabase.from
+      .mockReturnValueOnce({ select: vi.fn().mockReturnValue(leadsQuery) })
+      .mockReturnValueOnce({ update: batchUpdateChain });
+    supabase.storage.from.mockReturnValue({ upload: storageUpload });
 
     const out = await confirmLeadImport({
       assignedUserId: "u1",
@@ -76,6 +109,50 @@ describe("leadsApi", () => {
     });
     expect(out.duplicate_rows_export).toHaveLength(1);
     expect(out.duplicate_rows_export[0].reason).toBe("duplicate_existing");
+    expect(storageUpload).toHaveBeenCalledTimes(2);
+    expect(batchUpdateChain).toHaveBeenCalledWith({
+      clean_file_path: "users/u1/batches/9/clean.csv",
+      duplicate_file_path: "users/u1/batches/9/duplicates.csv",
+    });
+    expect(out.clean_file_path).toBe("users/u1/batches/9/clean.csv");
+    expect(out.duplicate_file_path).toBe("users/u1/batches/9/duplicates.csv");
+  });
+
+  it("returns storage warning and keeps import result when file persistence fails", async () => {
+    supabase.rpc.mockResolvedValue({
+      data: {
+        batch_id: 10,
+        inserted_rows: 1,
+        duplicate_rows_export: [],
+      },
+      error: null,
+    });
+    const leadsQuery = {
+      eq: vi.fn(() => leadsQuery),
+      order: vi.fn(() => leadsQuery),
+      range: vi.fn().mockResolvedValue({
+        data: [{ email: "new@example.com", payload_json: {} }],
+        error: null,
+      }),
+    };
+    supabase.from.mockReturnValueOnce({
+      select: vi.fn().mockReturnValue(leadsQuery),
+    });
+    supabase.storage.from.mockReturnValue({
+      upload: vi.fn().mockResolvedValue({ error: { message: "storage down" } }),
+    });
+
+    const out = await confirmLeadImport({
+      assignedUserId: "u1",
+      campaignId: 3,
+      sourceFilename: "leads.csv",
+      rows: [{ email: "new@example.com" }],
+    });
+
+    expect(out.batch_id).toBe(10);
+    expect(out.clean_file_path).toBeNull();
+    expect(out.duplicate_file_path).toBeNull();
+    expect(out.storage_warning).toMatch(/storage down/i);
   });
 
   it("builds duplicate csv with reason column", () => {
@@ -349,6 +426,42 @@ describe("leadsApi", () => {
     expect(lines[0]).toBe("email,source");
     expect(query1.range).toHaveBeenCalledWith(0, 999);
     expect(query2.range).toHaveBeenCalledWith(1000, 1999);
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+
+  it("downloads stored lead file using signed url", async () => {
+    const createSignedUrl = vi.fn().mockResolvedValue({
+      data: { signedUrl: "https://signed.example/file.csv" },
+      error: null,
+    });
+    supabase.storage.from.mockReturnValue({ createSignedUrl });
+
+    const realCreateElement = document.createElement.bind(document);
+    const click = vi.fn();
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      const node = realCreateElement(tagName);
+      if (tagName === "a") node.click = click;
+      return node;
+    });
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:stored");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    global.fetch.mockResolvedValue({
+      ok: true,
+      blob: vi
+        .fn()
+        .mockResolvedValue(new Blob(["email\nstored@example.com"], { type: "text/csv" })),
+    });
+
+    await downloadStoredLeadFile({
+      path: "users/u1/batches/9/clean.csv",
+      filename: "clean.csv",
+    });
+
+    expect(createSignedUrl).toHaveBeenCalledWith("users/u1/batches/9/clean.csv", 60);
+    expect(global.fetch).toHaveBeenCalledWith("https://signed.example/file.csv");
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
     expect(click).toHaveBeenCalledTimes(1);
   });
 });

@@ -5,6 +5,7 @@ import Button from "../../../ui/Button";
 import {
   downloadDuplicateLeadsCsv,
   downloadLeadBatchCsv,
+  downloadStoredLeadFile,
 } from "../../../services/leadsApi";
 
 const Card = styled.div`
@@ -65,20 +66,34 @@ function LeadsImportPreviewCard({
   async function handleDownloadNewLeads() {
     if (!importResult?.batch_id) return;
     try {
-      await downloadLeadBatchCsv(importResult.batch_id, {
-        filename: `lead-batch-${importResult.batch_id}.csv`,
-      });
+      if (importResult.clean_file_path) {
+        await downloadStoredLeadFile({
+          path: importResult.clean_file_path,
+          filename: `lead-batch-${importResult.batch_id}.csv`,
+        });
+      } else {
+        await downloadLeadBatchCsv(importResult.batch_id, {
+          filename: `lead-batch-${importResult.batch_id}.csv`,
+        });
+      }
     } catch (error) {
       toast.error(error.message || "Could not download imported leads file");
     }
   }
 
-  function handleDownloadDuplicateLeads() {
+  async function handleDownloadDuplicateLeads() {
     if (!importResult?.batch_id || !duplicateRows.length) return;
     try {
-      downloadDuplicateLeadsCsv(duplicateRows, {
-        filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
-      });
+      if (importResult.duplicate_file_path) {
+        await downloadStoredLeadFile({
+          path: importResult.duplicate_file_path,
+          filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
+        });
+      } else {
+        downloadDuplicateLeadsCsv(duplicateRows, {
+          filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
+        });
+      }
     } catch (error) {
       toast.error(error.message || "Could not download duplicate leads file");
     }

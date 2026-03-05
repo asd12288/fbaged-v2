@@ -153,7 +153,11 @@ function LeadsImportForm() {
     });
 
     setImportResult(result);
-    toast.success("Leads imported successfully");
+    if (result.storage_warning) {
+      toast.error(result.storage_warning);
+    } else {
+      toast.success("Leads imported successfully");
+    }
   }
 
   return (

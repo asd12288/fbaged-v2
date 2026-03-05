@@ -8,6 +8,7 @@ import { useLeadBatches } from "../hooks/useLeadBatches";
 import {
   downloadDuplicateLeadsCsv,
   downloadLeadBatchCsv,
+  downloadStoredLeadFile,
   getLeadBatchDuplicateRows,
 } from "../../../services/leadsApi";
 
@@ -76,9 +77,16 @@ function AdminLeadImportsTable() {
   async function handleDownloadNew(batch) {
     try {
       const base = getFilenameBase(batch.source_filename);
-      await downloadLeadBatchCsv(batch.id, {
-        filename: `${base}-batch-${batch.id}.csv`,
-      });
+      if (batch.clean_file_path) {
+        await downloadStoredLeadFile({
+          path: batch.clean_file_path,
+          filename: `${base}-batch-${batch.id}.csv`,
+        });
+      } else {
+        await downloadLeadBatchCsv(batch.id, {
+          filename: `${base}-batch-${batch.id}.csv`,
+        });
+      }
     } catch (error) {
       toast.error(error.message || "Could not download new leads file");
     }
@@ -91,16 +99,23 @@ function AdminLeadImportsTable() {
     }
 
     try {
-      const rows = await getLeadBatchDuplicateRows(batch.id);
-      if (!rows.length) {
-        toast.error("No duplicate leads for this batch");
-        return;
-      }
-
       const base = getFilenameBase(batch.source_filename);
-      downloadDuplicateLeadsCsv(rows, {
-        filename: `${base}-duplicates-batch-${batch.id}.csv`,
-      });
+      if (batch.duplicate_file_path) {
+        await downloadStoredLeadFile({
+          path: batch.duplicate_file_path,
+          filename: `${base}-duplicates-batch-${batch.id}.csv`,
+        });
+      } else {
+        const rows = await getLeadBatchDuplicateRows(batch.id);
+        if (!rows.length) {
+          toast.error("No duplicate leads for this batch");
+          return;
+        }
+
+        downloadDuplicateLeadsCsv(rows, {
+          filename: `${base}-duplicates-batch-${batch.id}.csv`,
+        });
+      }
     } catch (error) {
       toast.error(error.message || "Could not download duplicate leads file");
     }
