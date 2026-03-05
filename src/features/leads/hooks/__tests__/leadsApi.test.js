@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../../../../services/supabase", () => ({
   default: {
@@ -11,12 +11,18 @@ import supabase from "../../../../services/supabase";
 import {
   buildLeadsCsvText,
   confirmLeadImport,
+  downloadAcceptedLeadsCsv,
+  downloadDuplicateLeadsCsv,
   previewLeadImport,
 } from "../../../../services/leadsApi";
 
 describe("leadsApi", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("calls preview rpc with payload", async () => {
@@ -86,5 +92,71 @@ describe("leadsApi", () => {
     expect(firstRow).toContain('"dup@example.com"');
     expect(firstRow).toContain('"duplicate_existing"');
     expect(firstRow).toContain('"Dup"');
+  });
+
+  it("downloads accepted leads csv with provided filename", () => {
+    const realCreateElement = document.createElement.bind(document);
+    const click = vi.fn();
+    const createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockImplementation((tagName) => {
+        const node = realCreateElement(tagName);
+        if (tagName === "a") node.click = click;
+        return node;
+      });
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:accepted");
+    const revokeObjectURLSpy = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
+
+    downloadAcceptedLeadsCsv(
+      [{ email: "new@example.com", payload_json: { name: "New Lead" } }],
+      { filename: "accepted.csv" }
+    );
+
+    const anchor = createElementSpy.mock.results.find(
+      (result) => result.value?.tagName === "A"
+    )?.value;
+
+    expect(anchor.download).toBe("accepted.csv");
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:accepted");
+  });
+
+  it("downloads duplicate leads csv with reason column", async () => {
+    const realCreateElement = document.createElement.bind(document);
+    const click = vi.fn();
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      const node = realCreateElement(tagName);
+      if (tagName === "a") node.click = click;
+      return node;
+    });
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:duplicates");
+    const revokeObjectURLSpy = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
+
+    downloadDuplicateLeadsCsv(
+      [
+        {
+          email: "dup@example.com",
+          reason: "duplicate_existing",
+          payload_json: { name: "Dup Lead" },
+        },
+      ],
+      { filename: "duplicates.csv" }
+    );
+
+    const blobArg = createObjectURLSpy.mock.calls[0][0];
+    expect(blobArg).toBeInstanceOf(Blob);
+    const csvText = await blobArg.text();
+    expect(csvText.split("\n")[0]).toBe("email,reason,name");
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:duplicates");
   });
 });

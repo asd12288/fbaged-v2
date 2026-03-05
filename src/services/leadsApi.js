@@ -84,6 +84,30 @@ export function buildLeadsCsvText(rows, { includeReason = false } = {}) {
   return lines.join("\n");
 }
 
+function triggerCsvDownload(csvText, filename) {
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
+export function downloadAcceptedLeadsCsv(rows, { filename }) {
+  const csvText = buildLeadsCsvText(rows, { includeReason: false });
+  triggerCsvDownload(csvText, filename || "accepted-leads.csv");
+}
+
+export function downloadDuplicateLeadsCsv(rows, { filename }) {
+  const csvText = buildLeadsCsvText(rows, { includeReason: true });
+  triggerCsvDownload(csvText, filename || "duplicate-leads.csv");
+}
+
 export async function downloadLeadBatchCsv(batchId, { filename } = {}) {
   const { data, error } = await supabase
     .from("leads")
@@ -100,15 +124,5 @@ export async function downloadLeadBatchCsv(batchId, { filename } = {}) {
   }
 
   const csvText = buildLeadsCsvText(data);
-  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename || `lead-batch-${batchId}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  URL.revokeObjectURL(url);
+  triggerCsvDownload(csvText, filename || `lead-batch-${batchId}.csv`);
 }
