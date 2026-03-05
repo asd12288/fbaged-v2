@@ -55,6 +55,27 @@ export async function getLeadBatches({ assignedUserId } = {}) {
   return data;
 }
 
+export async function getLeadBatchDuplicateRows(batchId) {
+  const { data, error } = await supabase
+    .from("lead_import_rejections")
+    .select("email_raw, details, row_number")
+    .eq("batch_id", batchId)
+    .eq("reason", "duplicate")
+    .order("row_number", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []).map((row) => ({
+    email: row.email_raw || "",
+    reason: row?.details?.duplicate_in_file
+      ? "duplicate_in_file"
+      : "duplicate_existing",
+    payload_json: row?.details?.payload_json || {},
+  }));
+}
+
 function escapeCsvValue(value) {
   const stringValue = String(value ?? "");
   const escaped = stringValue.replaceAll('"', '""');

@@ -13,6 +13,7 @@ import {
   confirmLeadImport,
   downloadAcceptedLeadsCsv,
   downloadDuplicateLeadsCsv,
+  getLeadBatchDuplicateRows,
   previewLeadImport,
 } from "../../../../services/leadsApi";
 
@@ -158,5 +159,52 @@ describe("leadsApi", () => {
     expect(csvText.split("\n")[0]).toBe("email,reason,name");
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:duplicates");
+  });
+
+  it("returns mapped duplicate rows for a lead batch", async () => {
+    const order = vi.fn().mockResolvedValue({
+      data: [
+        {
+          email_raw: "dup1@example.com",
+          details: {
+            duplicate_in_file: true,
+            duplicate_existing: false,
+            payload_json: { name: "Dup 1", phone: "111" },
+          },
+        },
+        {
+          email_raw: "dup2@example.com",
+          details: {
+            duplicate_in_file: false,
+            duplicate_existing: true,
+            payload_json: { name: "Dup 2" },
+          },
+        },
+      ],
+      error: null,
+    });
+    const eqReason = vi.fn().mockReturnValue({ order });
+    const eqBatch = vi.fn().mockReturnValue({ eq: eqReason, order });
+    const select = vi.fn().mockReturnValue({ eq: eqBatch });
+    supabase.from.mockReturnValue({ select });
+
+    const rows = await getLeadBatchDuplicateRows(77);
+
+    expect(supabase.from).toHaveBeenCalledWith("lead_import_rejections");
+    expect(select).toHaveBeenCalledWith("email_raw, details, row_number");
+    expect(eqBatch).toHaveBeenCalledWith("batch_id", 77);
+    expect(eqReason).toHaveBeenCalledWith("reason", "duplicate");
+    expect(rows).toEqual([
+      {
+        email: "dup1@example.com",
+        reason: "duplicate_in_file",
+        payload_json: { name: "Dup 1", phone: "111" },
+      },
+      {
+        email: "dup2@example.com",
+        reason: "duplicate_existing",
+        payload_json: { name: "Dup 2" },
+      },
+    ]);
   });
 });
