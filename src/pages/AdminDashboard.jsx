@@ -8,7 +8,7 @@ import UsersAdminLayout from "../features/users/UsersAdminLayout";
 import AdminLeadsImportLayout from "../features/leads/admin/AdminLeadsImportLayout";
 import { useUser } from "../features/auth/useUser";
 import AdminControls from "../features/admin/AdminControls";
-import { useAdminScope } from "../features/admin/AdminScopeContext";
+import { useOptionalAdminScope } from "../features/admin/AdminScopeContext";
 
 const AdminContainer = styled.div`
   background-color: var(--color-grey-50);
@@ -53,7 +53,8 @@ const StatusBar = styled.div`
 function AdminDashboardInner() {
   const [activeTab, setActiveTab] = useState("campaigns");
   const { user } = useUser();
-  const { selectedUserId } = useAdminScope();
+  const scope = useOptionalAdminScope();
+  const selectedUserId = scope?.selectedUserId || null;
 
   if (user.role !== "admin") {
     return <Heading>Access denied</Heading>;
