@@ -11,8 +11,10 @@ import supabase from "../../../../services/supabase";
 import {
   buildLeadsCsvText,
   confirmLeadImport,
+  downloadLeadBatchCsv,
   downloadAcceptedLeadsCsv,
   downloadDuplicateLeadsCsv,
+  getLeadBatches,
   getLeadBatchDuplicateRows,
   previewLeadImport,
 } from "../../../../services/leadsApi";
@@ -162,7 +164,7 @@ describe("leadsApi", () => {
   });
 
   it("returns mapped duplicate rows for a lead batch", async () => {
-    const order = vi.fn().mockResolvedValue({
+    const range = vi.fn().mockResolvedValue({
       data: [
         {
           email_raw: "dup1@example.com",
@@ -183,8 +185,9 @@ describe("leadsApi", () => {
       ],
       error: null,
     });
+    const order = vi.fn().mockReturnValue({ range });
     const eqReason = vi.fn().mockReturnValue({ order });
-    const eqBatch = vi.fn().mockReturnValue({ eq: eqReason, order });
+    const eqBatch = vi.fn().mockReturnValue({ eq: eqReason });
     const select = vi.fn().mockReturnValue({ eq: eqBatch });
     supabase.from.mockReturnValue({ select });
 
@@ -194,6 +197,7 @@ describe("leadsApi", () => {
     expect(select).toHaveBeenCalledWith("email_raw, details, row_number");
     expect(eqBatch).toHaveBeenCalledWith("batch_id", 77);
     expect(eqReason).toHaveBeenCalledWith("reason", "duplicate");
+    expect(range).toHaveBeenCalledWith(0, 999);
     expect(rows).toEqual([
       {
         email: "dup1@example.com",
@@ -206,5 +210,145 @@ describe("leadsApi", () => {
         payload_json: { name: "Dup 2" },
       },
     ]);
+  });
+
+  it("paginates lead batches beyond 1000 rows", async () => {
+    const page1 = Array.from({ length: 1000 }, (_, index) => ({
+      id: index + 1,
+      source_filename: `page-1-${index + 1}.csv`,
+    }));
+    const page2 = [{ id: 1001, source_filename: "page-2-1.csv" }];
+
+    const makeQuery = (rows) => {
+      const query = {
+        eq: vi.fn(() => query),
+        order: vi.fn(() => query),
+        range: vi.fn().mockResolvedValue({ data: rows, error: null }),
+      };
+      return query;
+    };
+
+    const query1 = makeQuery(page1);
+    const query2 = makeQuery(page2);
+    const select1 = vi.fn().mockReturnValue(query1);
+    const select2 = vi.fn().mockReturnValue(query2);
+
+    supabase.from
+      .mockReturnValueOnce({ select: select1 })
+      .mockReturnValueOnce({ select: select2 });
+
+    const rows = await getLeadBatches({ assignedUserId: "user-1" });
+
+    expect(rows).toHaveLength(1001);
+    expect(rows.at(-1).id).toBe(1001);
+    expect(query1.range).toHaveBeenCalledWith(0, 999);
+    expect(query2.range).toHaveBeenCalledWith(1000, 1999);
+  });
+
+  it("paginates duplicate rows export for historical batches", async () => {
+    const page1 = Array.from({ length: 1000 }, (_, index) => ({
+      email_raw: `dup-${index + 1}@example.com`,
+      row_number: index + 1,
+      details: {
+        duplicate_in_file: true,
+        duplicate_existing: false,
+        payload_json: { idx: index + 1 },
+      },
+    }));
+    const page2 = [
+      {
+        email_raw: "dup-1001@example.com",
+        row_number: 1001,
+        details: {
+          duplicate_in_file: false,
+          duplicate_existing: true,
+          payload_json: { idx: 1001 },
+        },
+      },
+    ];
+
+    const makeQuery = (rows) => {
+      const query = {
+        eq: vi.fn(() => query),
+        order: vi.fn(() => query),
+        range: vi.fn().mockResolvedValue({ data: rows, error: null }),
+      };
+      return query;
+    };
+
+    const query1 = makeQuery(page1);
+    const query2 = makeQuery(page2);
+    const select1 = vi.fn().mockReturnValue(query1);
+    const select2 = vi.fn().mockReturnValue(query2);
+
+    supabase.from
+      .mockReturnValueOnce({ select: select1 })
+      .mockReturnValueOnce({ select: select2 });
+
+    const rows = await getLeadBatchDuplicateRows(88);
+
+    expect(rows).toHaveLength(1001);
+    expect(rows.at(-1)).toEqual({
+      email: "dup-1001@example.com",
+      reason: "duplicate_existing",
+      payload_json: { idx: 1001 },
+    });
+    expect(query1.range).toHaveBeenCalledWith(0, 999);
+    expect(query2.range).toHaveBeenCalledWith(1000, 1999);
+  });
+
+  it("downloads full batch csv by paging reads beyond 1000 rows", async () => {
+    const page1 = Array.from({ length: 1000 }, (_, index) => ({
+      email: `lead-${index + 1}@example.com`,
+      payload_json: { source: "bulk" },
+    }));
+    const page2 = [
+      {
+        email: "lead-1001@example.com",
+        payload_json: { source: "bulk" },
+      },
+    ];
+
+    const makeQuery = (rows) => {
+      const query = {
+        eq: vi.fn(() => query),
+        order: vi.fn(() => query),
+        range: vi.fn().mockResolvedValue({ data: rows, error: null }),
+      };
+      return query;
+    };
+
+    const query1 = makeQuery(page1);
+    const query2 = makeQuery(page2);
+    const select1 = vi.fn().mockReturnValue(query1);
+    const select2 = vi.fn().mockReturnValue(query2);
+
+    supabase.from
+      .mockReturnValueOnce({ select: select1 })
+      .mockReturnValueOnce({ select: select2 });
+
+    const realCreateElement = document.createElement.bind(document);
+    const click = vi.fn();
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      const node = realCreateElement(tagName);
+      if (tagName === "a") node.click = click;
+      return node;
+    });
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:batch");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    await downloadLeadBatchCsv(12, { filename: "batch.csv" });
+
+    const blobArg = createObjectURLSpy.mock.calls[0][0];
+    const csvText = await blobArg.text();
+    const lines = csvText.split("\n");
+
+    expect(lines).toHaveLength(1002);
+    expect(lines[0]).toBe("email,source");
+    expect(query1.range).toHaveBeenCalledWith(0, 999);
+    expect(query2.range).toHaveBeenCalledWith(1000, 1999);
+    expect(click).toHaveBeenCalledTimes(1);
   });
 });

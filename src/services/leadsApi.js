@@ -1,5 +1,29 @@
 import supabase from "./supabase";
 
+const PAGE_SIZE = 1000;
+
+async function fetchAllPages(buildQuery) {
+  const rows = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1;
+    const { data, error } = await buildQuery(from, to);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const pageRows = data || [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  return rows;
+}
+
 export async function previewLeadImport({ assignedUserId, campaignId, emails }) {
   const { data, error } = await supabase.rpc("admin_leads_import_preview", {
     p_assigned_user_id: assignedUserId,
@@ -35,37 +59,29 @@ export async function confirmLeadImport({
 }
 
 export async function getLeadBatches({ assignedUserId } = {}) {
-  let query = supabase
-    .from("lead_import_batches")
-    .select(
+  return fetchAllPages((from, to) => {
+    let query = supabase.from("lead_import_batches").select(
       "id, created_at, source_filename, inserted_rows, duplicate_rows, invalid_rows, campaign_id, assigned_user_id, campaign:campaigns(id, campaignName)"
-    )
-    .order("created_at", { ascending: false });
+    );
 
-  if (assignedUserId) {
-    query = query.eq("assigned_user_id", assignedUserId);
-  }
+    if (assignedUserId) {
+      query = query.eq("assigned_user_id", assignedUserId);
+    }
 
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
+    return query.order("created_at", { ascending: false }).range(from, to);
+  });
 }
 
 export async function getLeadBatchDuplicateRows(batchId) {
-  const { data, error } = await supabase
-    .from("lead_import_rejections")
-    .select("email_raw, details, row_number")
-    .eq("batch_id", batchId)
-    .eq("reason", "duplicate")
-    .order("row_number", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("lead_import_rejections")
+      .select("email_raw, details, row_number")
+      .eq("batch_id", batchId)
+      .eq("reason", "duplicate")
+      .order("row_number", { ascending: true })
+      .range(from, to)
+  );
 
   return (data || []).map((row) => ({
     email: row.email_raw || "",
@@ -130,15 +146,14 @@ export function downloadDuplicateLeadsCsv(rows, { filename }) {
 }
 
 export async function downloadLeadBatchCsv(batchId, { filename } = {}) {
-  const { data, error } = await supabase
-    .from("leads")
-    .select("email, payload_json")
-    .eq("batch_id", batchId)
-    .order("id", { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const data = await fetchAllPages((from, to) =>
+    supabase
+      .from("leads")
+      .select("email, payload_json")
+      .eq("batch_id", batchId)
+      .order("id", { ascending: true })
+      .range(from, to)
+  );
 
   if (!data?.length) {
     throw new Error("No leads found for this batch");

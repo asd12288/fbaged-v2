@@ -12,7 +12,7 @@ Currently, two official plugins are available:
 The app now includes a leads import and distribution flow:
 
 - Admin uploads a CSV (`email` column required).
-- System previews duplicates (global by normalized email) before import.
+- System previews duplicates per selected user (by normalized email) before import.
 - Admin assigns import to one user and one of that user's campaigns.
 - Each import is tracked as a separate batch/cycle.
 - Leads downloads are admin-only from `Admin Dashboard -> Leads`.
@@ -29,3 +29,18 @@ The app now includes a leads import and distribution flow:
 - Run tests: `npm run test`
 - Reset local DB with migrations: `supabase db reset --yes`
 - Schema smoke check: `docker exec -i supabase_db_local-dev-setup psql -U postgres -d postgres -f - < scripts/sql/leads_schema_smoke.sql`
+
+### Large Initial Imports (20k+ rows)
+
+For one-time bootstrap imports, avoid browser JSON upload. Keep the regular UI flow for recurring small files.
+
+- Use Postgres `COPY`/`\\copy` into a staging table.
+- Run server-side SQL to:
+  - normalize emails
+  - detect duplicates inside the file
+  - detect duplicates against existing leads for the selected `assigned_user_id`
+  - insert only clean rows into `public.leads`
+  - store duplicate rows in `public.lead_import_rejections`
+- Produce two files for admin workflow:
+  - clean leads file (new rows only)
+  - duplicate leads file (duplicate rows + reason)
