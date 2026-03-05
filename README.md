@@ -15,7 +15,10 @@ The app now includes a leads import and distribution flow:
 - System previews duplicates (global by normalized email) before import.
 - Admin assigns import to one user and one of that user's campaigns.
 - Each import is tracked as a separate batch/cycle.
-- Users can see only their own batches and download CSV per batch.
+- Leads downloads are admin-only from `Admin Dashboard -> Leads`.
+- After confirm import, admin can download:
+  - Imported (new) leads CSV
+  - Duplicate leads CSV (separate file, includes duplicate reason)
 
 ### Local verification
 
