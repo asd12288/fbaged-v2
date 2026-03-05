@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import LeadsImportForm from "../LeadsImportForm";
 
@@ -11,7 +11,12 @@ vi.mock("../../../users/useUsers", () => ({
 
 vi.mock("../../../campaigns/useCampaigns", () => ({
   useCampaigns: () => ({
-    data: [{ id: 1, campaignName: "Summer" }],
+    data: [
+      { id: 1, campaignName: "Summer", status: "Active" },
+      { id: 2, campaignName: "Winter", status: "Paused" },
+      { id: 3, campaignName: "Spring", status: "Learning" },
+      { id: 4, campaignName: "Autumn", status: "Canceled" },
+    ],
     isPending: false,
   }),
 }));
@@ -37,5 +42,24 @@ describe("LeadsImportForm", () => {
     expect(screen.getByLabelText(/select user/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/select campaign/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/upload csv/i)).toBeInTheDocument();
+  });
+
+  it("shows only active campaigns in campaign selection", () => {
+    render(<LeadsImportForm />);
+
+    const campaignSelect = screen.getByLabelText(/select campaign/i);
+
+    expect(
+      within(campaignSelect).getByRole("option", { name: "Summer" })
+    ).toBeInTheDocument();
+    expect(
+      within(campaignSelect).queryByRole("option", { name: "Winter" })
+    ).not.toBeInTheDocument();
+    expect(
+      within(campaignSelect).queryByRole("option", { name: "Spring" })
+    ).not.toBeInTheDocument();
+    expect(
+      within(campaignSelect).queryByRole("option", { name: "Autumn" })
+    ).not.toBeInTheDocument();
   });
 });

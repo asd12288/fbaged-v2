@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import toast from "react-hot-toast";
 import Papa from "papaparse";
@@ -11,7 +11,6 @@ import { useLeadImportConfirm } from "../hooks/useLeadImportConfirm";
 
 import FormRowVertical from "../../../ui/FormRowVertical";
 import Select from "../../../ui/Select";
-import Input from "../../../ui/Input";
 import Button from "../../../ui/Button";
 import SpinnerMini from "../../../ui/SpinnerMini";
 import LeadsImportPreviewCard from "./LeadsImportPreviewCard";
@@ -37,6 +36,43 @@ const SmallText = styled.p`
   font-size: 1.2rem;
 `;
 
+const UploadArea = styled.div`
+  border: 2px dashed
+    ${(props) =>
+      props.$hasFile ? "var(--color-green-500)" : "var(--color-grey-300)"};
+  border-radius: var(--border-radius-md);
+  padding: 1.2rem;
+  background: var(--color-grey-0);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-brand-500);
+    background: var(--color-grey-50);
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+`;
+
+const FileStatus = styled.p`
+  margin: 0.4rem 0 0;
+  font-size: 1.2rem;
+  color: ${(props) =>
+    props.$hasFile ? "var(--color-green-700)" : "var(--color-grey-500)"};
+`;
+
+const UploadActions = styled.div`
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+`;
+
 function parseCsv(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -50,6 +86,7 @@ function parseCsv(file) {
 }
 
 function LeadsImportForm() {
+  const fileInputRef = useRef(null);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedCampaignId, setSelectedCampaignId] = useState("");
   const [file, setFile] = useState(null);
@@ -78,13 +115,21 @@ function LeadsImportForm() {
   const campaignOptions = useMemo(
     () => [
       { value: "", label: "Select campaign" },
-      ...campaigns.map((campaign) => ({
-        value: String(campaign.id),
-        label: campaign.campaignName || `Campaign #${campaign.id}`,
-      })),
+      ...campaigns
+        .filter((campaign) => campaign.status === "Active")
+        .map((campaign) => ({
+          value: String(campaign.id),
+          label: campaign.campaignName || `Campaign #${campaign.id}`,
+        })),
     ],
     [campaigns]
   );
+
+  function handleFileSelect(nextFile) {
+    setFile(nextFile || null);
+    setPreview(null);
+    setImportResult(null);
+  }
 
   async function handlePreview(event) {
     event.preventDefault();
@@ -193,17 +238,58 @@ function LeadsImportForm() {
 
       <FormRowVertical>
         <label htmlFor="csv-file">Upload CSV</label>
-        <Input
+        <HiddenFileInput
+          ref={fileInputRef}
           id="csv-file"
           type="file"
           accept=".csv,text/csv"
           onChange={(event) => {
-            setFile(event.target.files?.[0] || null);
-            setPreview(null);
-            setImportResult(null);
+            handleFileSelect(event.target.files?.[0] || null);
           }}
         />
-        <SmallText>Required column: email</SmallText>
+        <UploadArea
+          $hasFile={!!file}
+          onClick={() => fileInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+        >
+          <FileStatus $hasFile={!!file}>
+            {file ? `Selected file: ${file.name}` : "Click here to choose CSV"}
+          </FileStatus>
+          <SmallText>Required column: email</SmallText>
+          <UploadActions>
+            <Button
+              type="button"
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+            >
+              Choose CSV
+            </Button>
+            {file ? (
+              <Button
+                type="button"
+                size="small"
+                variation="secondary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleFileSelect(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              >
+                Clear
+              </Button>
+            ) : null}
+          </UploadActions>
+        </UploadArea>
       </FormRowVertical>
 
       <div>

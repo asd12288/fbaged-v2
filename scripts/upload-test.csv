@@ -1,0 +1,5 @@
+email,first_name,phone
+existing.lead@example.com,Existing Lead,0500000001
+new.upload.1@example.com,Upload One,0500000002
+bad-email,Invalid Lead,0500000003
+new.upload.2@example.com,Upload Two,0500000004
