@@ -1,6 +1,11 @@
 /* eslint-disable react/prop-types */
 import styled from "styled-components";
+import toast from "react-hot-toast";
 import Button from "../../../ui/Button";
+import {
+  downloadDuplicateLeadsCsv,
+  downloadLeadBatchCsv,
+} from "../../../services/leadsApi";
 
 const Card = styled.div`
   margin-top: 2rem;
@@ -55,6 +60,29 @@ function LeadsImportPreviewCard({
   if (!preview) return null;
 
   const sampleDuplicates = preview?.remote?.duplicate_samples || [];
+  const duplicateRows = importResult?.duplicate_rows_export || [];
+
+  async function handleDownloadNewLeads() {
+    if (!importResult?.batch_id) return;
+    try {
+      await downloadLeadBatchCsv(importResult.batch_id, {
+        filename: `lead-batch-${importResult.batch_id}.csv`,
+      });
+    } catch (error) {
+      toast.error(error.message || "Could not download imported leads file");
+    }
+  }
+
+  function handleDownloadDuplicateLeads() {
+    if (!importResult?.batch_id || !duplicateRows.length) return;
+    try {
+      downloadDuplicateLeadsCsv(duplicateRows, {
+        filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
+      });
+    } catch (error) {
+      toast.error(error.message || "Could not download duplicate leads file");
+    }
+  }
 
   return (
     <Card>
@@ -89,6 +117,20 @@ function LeadsImportPreviewCard({
           skipped {importResult.duplicate_rows} duplicates and
           {" "}
           {importResult.invalid_rows} invalid rows.
+          <div style={{ display: "flex", gap: "0.8rem", marginTop: "1rem" }}>
+            <Button size="small" onClick={handleDownloadNewLeads}>
+              Download New Leads CSV
+            </Button>
+            {duplicateRows.length ? (
+              <Button
+                size="small"
+                variation="secondary"
+                onClick={handleDownloadDuplicateLeads}
+              >
+                Download Duplicate Leads CSV
+              </Button>
+            ) : null}
+          </div>
         </ResultBox>
       ) : null}
     </Card>
