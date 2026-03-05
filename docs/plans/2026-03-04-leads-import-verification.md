@@ -7,8 +7,10 @@ Verification for the leads distribution feature:
 - Admin preview + confirm import
 - Global duplicate detection by normalized email
 - Per-batch ownership and stats
-- User-only visibility for own lead batches
-- Per-batch CSV download support in UI service layer
+- Admin-only leads navigation and route access
+- Post-import CSV download actions for:
+  - accepted (new) leads
+  - duplicate leads with duplicate reason
 
 ## Automated Checks
 
@@ -20,15 +22,15 @@ Command:
 npm run test
 ```
 
-Result:
+Result (latest targeted run):
 
-- `6` test files passed
-- `7` tests passed
+- `4` test files passed
+- `9` tests passed
 - Includes:
-- CSV/email utility tests
-- Leads API wrapper test
+- Leads API wrapper + CSV download helper tests
 - Admin leads import form render test
-- User leads table render test
+- Admin leads preview/result dual-download test
+- Main navigation test asserting `My Leads` does not render
 
 ### 2) Schema smoke check
 
@@ -43,6 +45,7 @@ Result:
 - `public.lead_import_batches` exists
 - `public.leads` exists
 - `public.lead_import_rejections` exists
+- `public.admin_leads_import_confirm(uuid,bigint,text,jsonb)` exists
 
 ## Functional Verification (Local DB)
 
@@ -81,5 +84,8 @@ Observed:
 - [x] Admin can preview duplicate emails before import
 - [x] Import inserts only new leads and records batch stats
 - [x] Duplicate emails are globally blocked after first import
-- [x] User visibility is restricted to own lead batches
-- [x] User UI includes per-batch download action
+- [x] Leads entry is removed from user nav (`My Leads` removed)
+- [x] `/my-leads` route is removed from app routing
+- [x] Admin can download imported leads CSV after confirm
+- [x] Admin can download duplicate leads CSV after confirm
+- [x] Duplicate CSV contains `reason` column (`duplicate_in_file` / `duplicate_existing`)
