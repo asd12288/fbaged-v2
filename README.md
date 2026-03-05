@@ -19,6 +19,10 @@ The app now includes a leads import and distribution flow:
 - After confirm import, admin can download:
   - Imported (new) leads CSV
   - Duplicate leads CSV (separate file, includes duplicate reason)
+- Admin Leads now has:
+  - `Upload` tab for new imports
+  - `Imports` tab for historical batch downloads
+- Historical duplicates download from `Imports` also includes original row columns + duplicate reason.
 
 ### Local verification
 

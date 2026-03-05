@@ -11,6 +11,9 @@ Verification for the leads distribution feature:
 - Post-import CSV download actions for:
   - accepted (new) leads
   - duplicate leads with duplicate reason
+- Admin leads historical `Imports` tab:
+  - lists selected-user batches
+  - supports old batch downloads for new + duplicate leads
 
 ## Automated Checks
 
@@ -31,6 +34,14 @@ Result (latest targeted run):
 - Admin leads import form render test
 - Admin leads preview/result dual-download test
 - Main navigation test asserting `My Leads` does not render
+
+Additional targeted run for imports history:
+
+- `3` test files passed
+- `11` tests passed
+- Includes:
+- historical duplicate mapping service test
+- admin imports table actions/disabled state tests
 
 ### 2) Schema smoke check
 
@@ -89,3 +100,6 @@ Observed:
 - [x] Admin can download imported leads CSV after confirm
 - [x] Admin can download duplicate leads CSV after confirm
 - [x] Duplicate CSV contains `reason` column (`duplicate_in_file` / `duplicate_existing`)
+- [x] Admin Leads has `Upload` and `Imports` tabs
+- [x] Imports tab lists selected-user historical batches
+- [x] Imports tab downloads old duplicate CSV with original payload columns + `reason`
