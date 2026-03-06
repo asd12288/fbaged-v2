@@ -4,8 +4,6 @@ import Heading from "../../../ui/Heading";
 import { useCampaigns } from "../useCampaigns";
 import { useState } from "react";
 import styled from "styled-components";
-import Spinner from "../../../ui/Spinner";
-import { HiWallet } from "react-icons/hi2";
 import Empty from "../../../ui/Empty";
 
 const COLORS = [

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";

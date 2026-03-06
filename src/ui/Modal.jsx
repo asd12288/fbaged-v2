@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { cloneElement, createContext, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiX } from "react-icons/hi";
@@ -58,7 +59,7 @@ const ModalBody = styled.div`
   max-height: 90vh;
 `;
 
-function Modal({ children, width }) {
+function Modal({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const open = () => setIsOpen(true);

@@ -1,11 +1,44 @@
 import { isValidEmail, normalizeEmail } from "./email";
 
+const CANONICAL_EMAIL_HEADER = "email";
+
+export function normalizeCsvHeader(header) {
+  const normalizedHeader = String(header ?? "").trim().toLowerCase();
+  const collapsedHeader = normalizedHeader.replace(/[^a-z]/g, "");
+
+  if (
+    collapsedHeader === CANONICAL_EMAIL_HEADER ||
+    collapsedHeader === "emailaddress"
+  ) {
+    return CANONICAL_EMAIL_HEADER;
+  }
+
+  return normalizedHeader;
+}
+
+export function hasEmailColumn(fields = []) {
+  return fields.some(
+    (field) => normalizeCsvHeader(field) === CANONICAL_EMAIL_HEADER
+  );
+}
+
+function getRawEmailValue(row) {
+  if (!row || typeof row !== "object") return "";
+  if (CANONICAL_EMAIL_HEADER in row) return row[CANONICAL_EMAIL_HEADER];
+
+  const emailEntry = Object.entries(row).find(
+    ([key]) => normalizeCsvHeader(key) === CANONICAL_EMAIL_HEADER
+  );
+
+  return emailEntry?.[1] ?? "";
+}
+
 export function buildPreviewRows(rawRows) {
   const seen = new Set();
   const processedRows = [];
 
   for (const [index, row] of rawRows.entries()) {
-    const rawEmail = row?.email ?? "";
+    const rawEmail = getRawEmailValue(row);
     const email = normalizeEmail(rawEmail);
 
     if (!email || !isValidEmail(email)) {

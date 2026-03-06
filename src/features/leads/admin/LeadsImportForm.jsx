@@ -5,7 +5,7 @@ import Papa from "papaparse";
 
 import { useUsers } from "../../users/useUsers";
 import { useCampaigns } from "../../campaigns/useCampaigns";
-import { buildPreviewRows } from "../utils/csv";
+import { buildPreviewRows, hasEmailColumn, normalizeCsvHeader } from "../utils/csv";
 import { useLeadImportPreview } from "../hooks/useLeadImportPreview";
 import { useLeadImportConfirm } from "../hooks/useLeadImportConfirm";
 
@@ -37,12 +37,14 @@ const SmallText = styled.p`
   font-size: 1.2rem;
 `;
 
+const ACTIVE_CAMPAIGN_STATUSES = new Set(["Active", "Learning"]);
+
 function parseCsv(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      transformHeader: (header) => header.trim().toLowerCase(),
+      transformHeader: normalizeCsvHeader,
       complete: (results) => resolve(results),
       error: (error) => reject(error),
     });
@@ -75,15 +77,23 @@ function LeadsImportForm() {
     [users]
   );
 
+  const activeCampaigns = useMemo(
+    () =>
+      campaigns.filter((campaign) =>
+        ACTIVE_CAMPAIGN_STATUSES.has(campaign.status)
+      ),
+    [campaigns]
+  );
+
   const campaignOptions = useMemo(
     () => [
       { value: "", label: "Select campaign" },
-      ...campaigns.map((campaign) => ({
+      ...activeCampaigns.map((campaign) => ({
         value: String(campaign.id),
         label: campaign.campaignName || `Campaign #${campaign.id}`,
       })),
     ],
-    [campaigns]
+    [activeCampaigns]
   );
 
   async function handlePreview(event) {
@@ -110,7 +120,7 @@ function LeadsImportForm() {
       return;
     }
 
-    if (!parsed.meta?.fields?.includes("email")) {
+    if (!hasEmailColumn(parsed.meta?.fields)) {
       toast.error("CSV must include an email column");
       return;
     }

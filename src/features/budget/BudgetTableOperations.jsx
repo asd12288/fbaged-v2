@@ -1,7 +1,6 @@
 import SortBy from "../../ui/SortBy";
 import TableOperations from "../../ui/TableOperations";
 import Filter from "../../ui/Filter";
-import GridBox from "../../ui/GridBox";
 
 function BudgetTableOperations() {
   return (

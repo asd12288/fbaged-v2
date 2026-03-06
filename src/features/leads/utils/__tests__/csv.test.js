@@ -16,4 +16,19 @@ describe("csv preview", () => {
     expect(out.summary.invalidRows).toBe(2);
     expect(out.candidateEmails).toEqual(["a@example.com"]);
   });
+
+  it("accepts common email header aliases", () => {
+    const rows = [
+      { "e-mail": "Alias@Example.com" },
+      { EMAIL: "second@example.com" },
+    ];
+
+    const out = buildPreviewRows(rows);
+
+    expect(out.summary.invalidRows).toBe(0);
+    expect(out.candidateEmails).toEqual([
+      "alias@example.com",
+      "second@example.com",
+    ]);
+  });
 });

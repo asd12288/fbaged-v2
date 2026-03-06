@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import styled from "styled-components";
 import toast from "react-hot-toast";
 import Button from "../../../ui/Button";

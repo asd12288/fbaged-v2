@@ -4,7 +4,6 @@ import { useDeposits } from "../useDeposits";
 import styled from "styled-components";
 import { useSearchParams } from "react-router";
 import Heading from "../../../ui/Heading";
-import GridBox from "../../../ui/GridBox";
 
 const StyledDepositList = styled.div`
   display: flex;

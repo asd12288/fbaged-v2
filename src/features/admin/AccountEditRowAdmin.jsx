@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "../../ui/Button";
 import Table from "../../ui/Table";
 import toast from "react-hot-toast";
@@ -238,8 +238,8 @@ function AccountEditRowAdmin({ account }) {
           <ConfirmationBox>
             <h3>Confirm Deletion</h3>
             <p>
-              Are you sure you want to delete the account "{account.nameAccount}
-              "? This action cannot be undone.
+              Are you sure you want to delete the account &quot;
+              {account.nameAccount}&quot;? This action cannot be undone.
             </p>
             <ConfirmButtonContainer>
               <Button

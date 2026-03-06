@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import styled from "styled-components";
 import { useUser } from "../auth/useUser";
 import { useOptionalAdminScope } from "./AdminScopeContext";

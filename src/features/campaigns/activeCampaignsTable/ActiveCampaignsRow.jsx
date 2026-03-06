@@ -1,6 +1,4 @@
-import { HiOutlineZoomIn } from "react-icons/hi";
 import Table from "../../../ui/Table";
-import Tag from "../../../ui/Tag";
 import { formatCurrency } from "../../../utils/helpers";
 import styled from "styled-components";
 import { useState } from "react";

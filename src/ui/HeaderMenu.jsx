@@ -1,7 +1,4 @@
 import styled from "styled-components";
-import ButtonIcon from "./ButtonIcon";
-import { HiOutlineUser } from "react-icons/hi";
-import { BiLogOut } from "react-icons/bi";
 import Logout from "./Logout";
 
 const StyledHeaderMenu = styled.ul`
@@ -13,7 +10,7 @@ function HeaderMenu() {
   return (
     <StyledHeaderMenu>
       <li>
-        <Logout/>
+        <Logout />
       </li>
     </StyledHeaderMenu>
   );

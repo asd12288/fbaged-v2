@@ -18,7 +18,7 @@ const StyledCost = styled.div`
 `;
 
 function AccountRow({
-  account: { nameAccount, numAccounts, cost, totalCost },
+  account: { nameAccount, numAccounts, cost },
 }) {
   return (
     <Table.Row>

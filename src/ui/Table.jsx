@@ -103,7 +103,7 @@ function Table({ columns, children, type = "regular" }) {
 }
 
 function Header({ children, type }) {
-  const { columns, type: contextType } = useContext(TableContext);
+  const { type: contextType } = useContext(TableContext);
   const headerType = type || contextType;
 
   return (
@@ -127,7 +127,7 @@ function Header({ children, type }) {
 }
 
 function Row({ children, type }) {
-  const { columns, type: contextType } = useContext(TableContext);
+  const { type: contextType } = useContext(TableContext);
   const rowType = type || contextType;
 
   return (
@@ -143,7 +143,8 @@ function Row({ children, type }) {
 
 function Body({ data, render, type }) {
   const { type: contextType } = useContext(TableContext);
-  const bodyType = type || contextType;
+  void type;
+  void contextType;
 
   if (!data || data.length === 0) {
     return (

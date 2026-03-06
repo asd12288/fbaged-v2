@@ -10,14 +10,8 @@ const StyledUserAvatar = styled.div`
   color: var(--color-grey-700);
 `;
 
-const UserAvatarImg = styled.img`
-  width: 4.8rem;
-  height: 4.8rem;
-  border-radius: 50%;
-`;
-
 function UserAvatar() {
-  const { user, isLoading } = useUser();
+  const { user } = useUser();
   if (!user) return null;
   return (
     <StyledUserAvatar>

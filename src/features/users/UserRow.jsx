@@ -91,7 +91,7 @@ const DeleteButton = styled(Button)`
 
 function UserRow({ user }) {
   const { removeUser, isDeleting } = useDeleteUser();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [, setShowDeleteConfirm] = useState(false);
 
   const handleDelete = () => {
     removeUser(user.id, {
@@ -132,7 +132,7 @@ function UserRow({ user }) {
             <ConfirmDelete>
               <h3>Delete User</h3>
               <p>
-                Are you sure you want to permanently delete <strong>{user.username}</strong>? 
+                Are you sure you want to permanently delete <strong>{user.username}</strong>?
                 This action cannot be undone.
               </p>
 

@@ -3,7 +3,6 @@ import GridBox from "../../../ui/GridBox";
 import Heading from "../../../ui/Heading";
 import { formatCurrency } from "../../../utils/helpers";
 import { useBudget } from "../useBudget";
-import { motion } from "motion/react"
 
 const StyledBalanceCard = styled.div`
   grid-area: 3 / span 2;
@@ -54,11 +53,8 @@ function BalanceCard() {
   const {
     budget,
     budgetLow,
-    positiveBudgetRequired,
-    daysLeft,
     maintenceFees,
     totalDailyBudget,
-
     isPending,
   } = useBudget();
 
@@ -76,8 +72,7 @@ function BalanceCard() {
         )}
 
         <p>
-          Amount Minimum Required:{" "}
-          <span>5,000.00€</span>
+          Amount Minimum Required: <span>5,000.00EUR</span>
         </p>
 
         <DetailsGrid>

@@ -1,7 +1,5 @@
 import styled from "styled-components";
-import { formatCurrency } from "../../utils/helpers";
 import { useBudget } from "../budget/useBudget";
-import Spinner from "../../ui/Spinner";
 import SpinnerMini from "../../ui/SpinnerMini";
 
 const Banner = styled.div`
@@ -15,7 +13,7 @@ const Banner = styled.div`
 `;
 
 function WarningBanner() {
-  const { budget, budgetLow, isPending } = useBudget();
+  const { budgetLow, isPending } = useBudget();
 
   if (budgetLow) {
     return (

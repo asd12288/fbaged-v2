@@ -4,7 +4,6 @@ import Tag from "../../../ui/Tag";
 import { formatCurrency } from "../../../utils/helpers";
 import styled from "styled-components";
 import { useState } from "react";
-import React from "react";
 
 // Styled image with smooth transitions
 const Img = styled.img`
@@ -29,7 +28,6 @@ const ZoomContainer = styled.div`
 
 function CampaignRow({
   campaign: {
-    id,
     campaignName,
     status,
     dailyBudget,
