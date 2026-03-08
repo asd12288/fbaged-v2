@@ -129,7 +129,10 @@ describe("AdminLeadImportsTable", () => {
             payload_json: { name: "Dup" },
           },
         ],
-        { filename: "april-duplicates-batch-12.csv" }
+        {
+          filename: "april-duplicates-batch-12.csv",
+          campaignName: "Campaign B",
+        }
       );
     });
   });
@@ -162,6 +165,7 @@ describe("AdminLeadImportsTable", () => {
       expect(mockDownloadStoredLeadFile).toHaveBeenCalledWith({
         path: "users/u1/batches/14/clean.csv",
         filename: "may-batch-14.csv",
+        campaignName: "Campaign C",
       });
     });
     expect(mockDownloadLeadBatchCsv).not.toHaveBeenCalled();

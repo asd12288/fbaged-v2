@@ -77,14 +77,18 @@ function AdminLeadImportsTable() {
   async function handleDownloadNew(batch) {
     try {
       const base = getFilenameBase(batch.source_filename);
+      const campaignName =
+        batch?.campaign?.campaignName || `Campaign #${batch.campaign_id}`;
       if (batch.clean_file_path) {
         await downloadStoredLeadFile({
           path: batch.clean_file_path,
           filename: `${base}-batch-${batch.id}.csv`,
+          campaignName,
         });
       } else {
         await downloadLeadBatchCsv(batch.id, {
           filename: `${base}-batch-${batch.id}.csv`,
+          campaignName,
         });
       }
     } catch (error) {
@@ -100,10 +104,14 @@ function AdminLeadImportsTable() {
 
     try {
       const base = getFilenameBase(batch.source_filename);
+      const campaignName =
+        batch?.campaign?.campaignName || `Campaign #${batch.campaign_id}`;
       if (batch.duplicate_file_path) {
         await downloadStoredLeadFile({
           path: batch.duplicate_file_path,
           filename: `${base}-duplicates-batch-${batch.id}.csv`,
+          campaignName,
+          includeReason: true,
         });
       } else {
         const rows = await getLeadBatchDuplicateRows(batch.id);
@@ -114,6 +122,7 @@ function AdminLeadImportsTable() {
 
         downloadDuplicateLeadsCsv(rows, {
           filename: `${base}-duplicates-batch-${batch.id}.csv`,
+          campaignName,
         });
       }
     } catch (error) {

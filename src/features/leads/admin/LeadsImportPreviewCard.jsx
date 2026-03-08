@@ -69,10 +69,12 @@ function LeadsImportPreviewCard({
         await downloadStoredLeadFile({
           path: importResult.clean_file_path,
           filename: `lead-batch-${importResult.batch_id}.csv`,
+          campaignName: importResult.campaign_name,
         });
       } else {
         await downloadLeadBatchCsv(importResult.batch_id, {
           filename: `lead-batch-${importResult.batch_id}.csv`,
+          campaignName: importResult.campaign_name,
         });
       }
     } catch (error) {
@@ -87,10 +89,13 @@ function LeadsImportPreviewCard({
         await downloadStoredLeadFile({
           path: importResult.duplicate_file_path,
           filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
+          campaignName: importResult.campaign_name,
+          includeReason: true,
         });
       } else {
         downloadDuplicateLeadsCsv(duplicateRows, {
           filename: `duplicate-leads-batch-${importResult.batch_id}.csv`,
+          campaignName: importResult.campaign_name,
         });
       }
     } catch (error) {

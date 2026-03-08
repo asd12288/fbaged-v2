@@ -155,23 +155,53 @@ describe("leadsApi", () => {
     expect(out.storage_warning).toMatch(/storage down/i);
   });
 
-  it("builds duplicate csv with reason column", () => {
+  it("builds canonical csv columns from meta-style payload fields", () => {
+    const csv = buildLeadsCsvText(
+      [
+        {
+          email: "meta@example.com",
+          payload_json: {
+            first_name: "Philippe",
+            last_name: "Collet",
+            created_time: "2026-03-06T14:57:39-08:00",
+            phone_number: "p:+33603197653",
+            "cry sans jargon": "CRY SANS JARGON",
+            "quel_est_votre_niveau_actuel_concernant_les_cryptos_":
+              "je_decouvre_le_sujet",
+          },
+        },
+      ]
+    );
+
+    const [header, firstRow] = csv.split("\n");
+    expect(header).toBe("full name,email,tel,answer,date,campaign");
+    expect(firstRow).toBe(
+      '"Philippe Collet","meta@example.com","p:+33603197653","je_decouvre_le_sujet","2026-03-06T14:57:39-08:00","CRY SANS JARGON"'
+    );
+  });
+
+  it("builds duplicate csv with canonical columns and reason", () => {
     const csv = buildLeadsCsvText(
       [
         {
           email: "dup@example.com",
           reason: "duplicate_existing",
-          payload_json: { name: "Dup" },
+          payload_json: {
+            full_name: "Dup Lead",
+            phone_number: "111",
+            created_time: "2026-03-05T10:00:00Z",
+            response: "Interested",
+          },
         },
       ],
-      { includeReason: true }
+      { includeReason: true, campaignName: "Campaign Fallback" }
     );
 
     const [header, firstRow] = csv.split("\n");
-    expect(header).toBe("email,reason,name");
-    expect(firstRow).toContain('"dup@example.com"');
-    expect(firstRow).toContain('"duplicate_existing"');
-    expect(firstRow).toContain('"Dup"');
+    expect(header).toBe("full name,email,tel,answer,date,campaign,reason");
+    expect(firstRow).toBe(
+      '"Dup Lead","dup@example.com","111","Interested","2026-03-05T10:00:00Z","Campaign Fallback","duplicate_existing"'
+    );
   });
 
   it("downloads accepted leads csv with provided filename", () => {
@@ -226,16 +256,23 @@ describe("leadsApi", () => {
         {
           email: "dup@example.com",
           reason: "duplicate_existing",
-          payload_json: { name: "Dup Lead" },
+          payload_json: {
+            full_name: "Dup Lead",
+            phone_number: "111",
+            response: "Interested",
+            created_time: "2026-03-05T10:00:00Z",
+          },
         },
       ],
-      { filename: "duplicates.csv" }
+      { filename: "duplicates.csv", campaignName: "Campaign Fallback" }
     );
 
     const blobArg = createObjectURLSpy.mock.calls[0][0];
     expect(blobArg).toBeInstanceOf(Blob);
     const csvText = await blobArg.text();
-    expect(csvText.split("\n")[0]).toBe("email,reason,name");
+    expect(csvText.split("\n")[0]).toBe(
+      "full name,email,tel,answer,date,campaign,reason"
+    );
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:duplicates");
   });
@@ -377,12 +414,22 @@ describe("leadsApi", () => {
   it("downloads full batch csv by paging reads beyond 1000 rows", async () => {
     const page1 = Array.from({ length: 1000 }, (_, index) => ({
       email: `lead-${index + 1}@example.com`,
-      payload_json: { source: "bulk" },
+      payload_json: {
+        full_name: `Lead ${index + 1}`,
+        phone_number: "111",
+        response: "bulk",
+        created_time: "2026-03-06T00:00:00Z",
+      },
     }));
     const page2 = [
       {
         email: "lead-1001@example.com",
-        payload_json: { source: "bulk" },
+        payload_json: {
+          full_name: "Lead 1001",
+          phone_number: "111",
+          response: "bulk",
+          created_time: "2026-03-06T00:00:00Z",
+        },
       },
     ];
 
@@ -416,14 +463,20 @@ describe("leadsApi", () => {
       .mockReturnValue("blob:batch");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
-    await downloadLeadBatchCsv(12, { filename: "batch.csv" });
+    await downloadLeadBatchCsv(12, {
+      filename: "batch.csv",
+      campaignName: "Bulk Campaign",
+    });
 
     const blobArg = createObjectURLSpy.mock.calls[0][0];
     const csvText = await blobArg.text();
     const lines = csvText.split("\n");
 
     expect(lines).toHaveLength(1002);
-    expect(lines[0]).toBe("email,source");
+    expect(lines[0]).toBe("full name,email,tel,answer,date,campaign");
+    expect(lines[1]).toBe(
+      '"Lead 1","lead-1@example.com","111","bulk","2026-03-06T00:00:00Z","Bulk Campaign"'
+    );
     expect(query1.range).toHaveBeenCalledWith(0, 999);
     expect(query2.range).toHaveBeenCalledWith(1000, 1999);
     expect(click).toHaveBeenCalledTimes(1);
@@ -449,19 +502,26 @@ describe("leadsApi", () => {
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     global.fetch.mockResolvedValue({
       ok: true,
-      blob: vi
+      text: vi
         .fn()
-        .mockResolvedValue(new Blob(["email\nstored@example.com"], { type: "text/csv" })),
+        .mockResolvedValue("email,full_name\nstored@example.com,Stored Lead"),
     });
 
     await downloadStoredLeadFile({
       path: "users/u1/batches/9/clean.csv",
       filename: "clean.csv",
+      campaignName: "Stored Campaign",
     });
 
     expect(createSignedUrl).toHaveBeenCalledWith("users/u1/batches/9/clean.csv", 60);
     expect(global.fetch).toHaveBeenCalledWith("https://signed.example/file.csv");
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    const blobArg = createObjectURLSpy.mock.calls[0][0];
+    const csvText = await blobArg.text();
+    expect(csvText.split("\n")[0]).toBe("full name,email,tel,answer,date,campaign");
+    expect(csvText.split("\n")[1]).toBe(
+      '"Stored Lead","stored@example.com","","","","Stored Campaign"'
+    );
     expect(click).toHaveBeenCalledTimes(1);
   });
 });
