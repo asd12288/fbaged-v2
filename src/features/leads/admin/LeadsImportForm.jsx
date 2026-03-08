@@ -96,6 +96,14 @@ function LeadsImportForm() {
     [activeCampaigns]
   );
 
+  const selectedCampaign = useMemo(
+    () =>
+      activeCampaigns.find(
+        (campaign) => String(campaign.id) === String(selectedCampaignId)
+      ) || null,
+    [activeCampaigns, selectedCampaignId]
+  );
+
   async function handlePreview(event) {
     event.preventDefault();
 
@@ -158,11 +166,15 @@ function LeadsImportForm() {
     const result = await confirmImport({
       assignedUserId: selectedUserId,
       campaignId: Number(selectedCampaignId),
+      campaignName: selectedCampaign?.campaignName || "",
       sourceFilename: file?.name || "leads.csv",
       rows: parsedRows,
     });
 
-    setImportResult(result);
+    setImportResult({
+      ...result,
+      campaign_name: selectedCampaign?.campaignName || "",
+    });
     if (result.storage_warning) {
       toast.error(result.storage_warning);
     } else {

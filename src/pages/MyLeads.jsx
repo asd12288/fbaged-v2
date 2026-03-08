@@ -31,8 +31,11 @@ function MyLeads() {
 
   async function handleDownload(batch) {
     try {
+      const campaignName =
+        batch?.campaign?.campaignName || `Campaign #${batch.campaign_id}`;
       await downloadLeadBatchCsv(batch.id, {
         filename: `${batch.source_filename.replace(/\.csv$/i, "")}-batch-${batch.id}.csv`,
+        campaignName,
       });
     } catch (error) {
       toast.error(error.message || "Could not download lead batch");
