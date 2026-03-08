@@ -204,6 +204,44 @@ describe("leadsApi", () => {
     );
   });
 
+  it("supports french meta export aliases for name and phone fields", () => {
+    const csv = buildLeadsCsvText(
+      [
+        {
+          email: "french@example.com",
+          payload_json: {
+            nom_complet: "Christian Nicouleau",
+            numéro_de_téléphone: "p:+33609281321",
+            created_time: "2026-03-07T11:31:06-05:00",
+            "quel_est_votre_niveau_d’expérience_en_bourse_?_📈":
+              "3️⃣_j’ai_déjà_acheté_quelques_actions",
+            campaign_name: "ACHAT DAS 06/03/26",
+          },
+        },
+        {
+          email: "split@example.com",
+          payload_json: {
+            prénom: "Herve",
+            nom_de_famille: "Spierckel",
+            numéro_de_téléphone: "p:+33685832381",
+            created_time: "2026-03-07T23:47:31+08:00",
+            "❓_quelle_est_votre_situation_vis-à-vis_des_cryptomonnaies_?":
+              "🆕_je_découvre_le_sujet_et_souhaite_comprendre_les_bases",
+            campaign_name: "EXPLICA. CRY Z - 09/02/26",
+          },
+        },
+      ]
+    );
+
+    const [, firstRow, secondRow] = csv.split("\n");
+    expect(firstRow).toBe(
+      '"Christian Nicouleau","french@example.com","p:+33609281321","3️⃣_j’ai_déjà_acheté_quelques_actions","2026-03-07T11:31:06-05:00","ACHAT DAS 06/03/26"'
+    );
+    expect(secondRow).toBe(
+      '"Herve Spierckel","split@example.com","p:+33685832381","🆕_je_découvre_le_sujet_et_souhaite_comprendre_les_bases","2026-03-07T23:47:31+08:00","EXPLICA. CRY Z - 09/02/26"'
+    );
+  });
+
   it("downloads accepted leads csv with provided filename", () => {
     const realCreateElement = document.createElement.bind(document);
     const click = vi.fn();

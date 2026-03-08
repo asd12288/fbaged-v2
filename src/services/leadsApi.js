@@ -19,12 +19,15 @@ const FULL_NAME_ALIASES = buildAliasSet([
   "name",
   "contact name",
   "contact_name",
+  "nom complet",
+  "nom_complet",
 ]);
 const FIRST_NAME_ALIASES = buildAliasSet([
   "first name",
   "first_name",
   "firstname",
   "prenom",
+  "prénom",
 ]);
 const LAST_NAME_ALIASES = buildAliasSet([
   "last name",
@@ -34,6 +37,8 @@ const LAST_NAME_ALIASES = buildAliasSet([
   "surname",
   "family name",
   "family_name",
+  "nom de famille",
+  "nom_de_famille",
 ]);
 const PHONE_ALIASES = buildAliasSet([
   "tel",
@@ -46,6 +51,11 @@ const PHONE_ALIASES = buildAliasSet([
   "mobile",
   "mobile phone",
   "mobile_number",
+  "numero de telephone",
+  "numero_de_telephone",
+  "numéro de téléphone",
+  "numéro_de_téléphone",
+  "portable",
 ]);
 const DATE_ALIASES = buildAliasSet([
   "date",
