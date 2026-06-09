@@ -74,7 +74,7 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
       sendWindowStart: windowStart,
       sendWindowEnd: windowEnd,
       skipWeekends,
-      defaultDailyVolume: Number(dailyVolume),
+      defaultDailyVolume: Math.max(1, Number(dailyVolume) || 25),
       fieldMapping: { fields, constants: client?.field_mapping?.constants || {} },
       authSecret: authSecret.trim() ? authSecret.trim() : null,
     });
