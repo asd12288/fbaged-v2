@@ -57,6 +57,7 @@ existing in-app leads system.
 | Controls | Pause/resume/cancel, live per-lead status, adjust pace mid-drip |
 | Failure policy | Circuit breaker — N consecutive failures auto-pause the drip |
 | Engine architecture | pg_cron + Supabase Edge Function (Option A) |
+| Env safety | Tests never hit prod; worker dry-runs outside real prod deploy |
 
 ## Architecture
 
@@ -246,6 +247,32 @@ Mirrors the current `LeadsImportForm → preview → confirm` flow:
   Vault) validated on each request, so only pg_cron can invoke it.
 - All write paths go through SECURITY DEFINER RPCs that assert admin.
 
+## Environment Safety & Test Isolation
+
+The Supabase project `padrhwykbrioohogickg` is **production**: it backs the live
+site at fbaged.com, holds real users and 56k+ real leads, and is written to
+daily. This tool additionally makes **real outbound POSTs to clients' CRM
+webhooks**, so a test against prod could fire real leads at real clients. Every
+test/dev path must be unable to touch prod.
+
+- **No tests against prod.** Vitest runs against pure logic + mocks, or a local
+  Supabase stack (`supabase start`). A test bootstrap guard asserts the
+  configured Supabase URL/ref is **not** `padrhwykbrioohogickg` and fails fast
+  otherwise.
+- **Schema work goes local-first.** Develop migrations with the Supabase CLI
+  against the local stack; review before applying to prod. Do **not** use the
+  Supabase MCP `apply_migration`/`execute_sql` to mutate prod for development
+  (read-only inspection is fine).
+- **Delivery worker defaults to dry-run.** The worker only performs real
+  outbound POSTs when running in a real prod deployment. In any non-prod/test
+  context it operates in **dry-run**: it builds the request and records the
+  intended payload/headers but does not send. Controlled by an environment flag
+  (e.g. `SIM_DRIP_DRY_RUN`) and additionally guarded so a non-prod Supabase ref
+  forces dry-run on.
+- **Manual E2E** of webhook delivery targets a throwaway endpoint
+  (webhook.site / requestbin), never a real client URL, and runs against a local
+  or staging Supabase project — not prod.
+
 ## Testing
 
 Vitest (already configured):
@@ -259,6 +286,8 @@ Vitest (already configured):
   emails are allowed.
 - Shared CSV normalization: extract-and-reuse does not change existing import
   behavior (existing tests in `src/features/leads/**/__tests__` must still pass).
+- **Prod-safety guard**: the test bootstrap guard rejects a prod Supabase
+  URL/ref; the worker forces dry-run when not in a real prod deployment.
 
 ## Open Questions / Defaults (proceeding unless changed)
 
