@@ -1,75 +1,70 @@
 import { useState } from "react";
-import toast from "react-hot-toast";
 import styled from "styled-components";
+import Heading from "../../../ui/Heading";
+import GridBox from "../../../ui/GridBox";
 import { useSimClients } from "../hooks/useSimClients";
-import { useSimClientMutations } from "../hooks/useSimClientMutations";
-import SimClientsTable from "./SimClientsTable";
-import SimClientForm from "./SimClientForm";
+import SimClientsPanel from "./SimClientsPanel";
+import SimDripsPanel from "./SimDripsPanel";
 
-const Bar = styled.div`
+const TabContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2.4rem;
+  margin-bottom: 1.6rem;
+  border-bottom: 1px solid var(--color-grey-200);
+  width: 100%;
 `;
-const NewButton = styled.button`
-  padding: 0.8rem 1.6rem;
-  border-radius: var(--border-radius-sm);
+
+const Tab = styled.button`
+  background: none;
   border: none;
+  padding: 1rem 1.6rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: ${(props) =>
+    props.$active ? "var(--color-brand-600)" : "var(--color-grey-500)"};
+  border-bottom: 2px solid
+    ${(props) => (props.$active ? "var(--color-brand-600)" : "transparent")};
   cursor: pointer;
-  background: var(--color-brand-600);
-  color: white;
 `;
 
 export default function LeadSimLayout() {
-  const { clients, isPending, error } = useSimClients();
-  const { saveClient, isSaving, archiveClient } = useSimClientMutations();
-  const [editing, setEditing] = useState(null); // null=list, {}=new, {client}=edit
+  const { clients, isPending } = useSimClients();
+  const hasClients = !isPending && clients.length > 0;
 
-  if (isPending) return <p>Loading clients…</p>;
-  if (error) return <p>Could not load clients: {error.message}</p>;
+  const [activeSubTab, setActiveSubTab] = useState(null); // resolved on first render
+  const [preselectedClientId, setPreselectedClientId] = useState(null);
 
-  async function handleSave(values) {
-    try {
-      await saveClient(values);
-      toast.success("Client saved");
-      setEditing(null);
-    } catch (e) {
-      toast.error(e.message || "Could not save client");
-    }
-  }
+  // Default: open "Drips" if clients exist, else "Clients".
+  const resolvedTab = activeSubTab || (hasClients ? "drips" : "clients");
 
-  async function handleArchive(id) {
-    try {
-      await archiveClient(id);
-      toast.success("Client archived");
-    } catch (e) {
-      toast.error(e.message || "Could not archive client");
-    }
-  }
-
-  if (editing !== null) {
-    return (
-      <SimClientForm
-        client={editing.id ? editing : null}
-        onSave={handleSave}
-        onCancel={() => setEditing(null)}
-        isSaving={isSaving}
-      />
-    );
+  function openClient(client) {
+    setPreselectedClientId(client.id);
+    setActiveSubTab("drips");
   }
 
   return (
     <>
-      <Bar>
-        <h3>Sim clients</h3>
-        <NewButton onClick={() => setEditing({})}>+ New client</NewButton>
-      </Bar>
-      <SimClientsTable
-        clients={clients}
-        onEdit={(c) => setEditing(c)}
-        onArchive={handleArchive}
-      />
+      <Heading as="h2">Lead Sim</Heading>
+      <TabContainer>
+        <Tab
+          $active={resolvedTab === "clients"}
+          onClick={() => setActiveSubTab("clients")}
+        >
+          Clients
+        </Tab>
+        <Tab
+          $active={resolvedTab === "drips"}
+          onClick={() => setActiveSubTab("drips")}
+        >
+          Drips
+        </Tab>
+      </TabContainer>
+      <GridBox>
+        {resolvedTab === "clients" ? (
+          <SimClientsPanel onOpenClient={openClient} />
+        ) : (
+          <SimDripsPanel initialClientId={preselectedClientId} />
+        )}
+      </GridBox>
     </>
   );
 }

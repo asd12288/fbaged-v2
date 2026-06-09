@@ -1,7 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
+import { buildDeliveryPayload, redactedPayload } from "../lib/payload";
 
 const CANONICAL_FIELDS = ["full_name", "email", "tel", "answer", "date", "campaign"];
+
+// Pinned sample lead for the live payload preview.
+const SAMPLE_LEAD = {
+  email: "jane@example.com",
+  payload_json: {
+    canonical: { full_name: "Jane Doe", tel: "+33600000000" },
+  },
+};
 
 const Form = styled.form`
   display: flex;
@@ -41,6 +50,47 @@ const Ghost = styled(Button)`
   color: var(--color-grey-700);
 `;
 
+const PreviewCard = styled.div`
+  border: 1px solid var(--color-grey-200);
+  border-radius: var(--border-radius-md);
+  background: var(--color-grey-50);
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+`;
+
+const PreviewTitle = styled.h4`
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--color-brand-700);
+`;
+
+const PreviewMeta = styled.p`
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-grey-500);
+`;
+
+const PreviewBlock = styled.pre`
+  margin: 0;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--color-grey-200);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-grey-0);
+  font-family: "Menlo", "Consolas", monospace;
+  font-size: 1.15rem;
+  color: var(--color-grey-700);
+  white-space: pre-wrap;
+  word-break: break-all;
+`;
+
+const PreviewHint = styled.p`
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-grey-500);
+`;
+
 function mappingFromClient(client) {
   const fields = client?.field_mapping?.fields || {};
   return CANONICAL_FIELDS.reduce((acc, f) => ({ ...acc, [f]: fields[f] || "" }), {});
@@ -59,6 +109,38 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
   const [skipWeekends, setSkipWeekends] = useState(client?.skip_weekends || false);
   const [authSecret, setAuthSecret] = useState("");
   const [mapping, setMapping] = useState(mappingFromClient(client));
+
+  const payloadPreview = useMemo(() => {
+    const fields = Object.fromEntries(
+      Object.entries(mapping).filter(([, v]) => v && v.trim())
+    );
+    // Typed secret wins; otherwise stand in for the stored one so the
+    // preview shows where it will be placed (always masked below).
+    const effectiveSecret =
+      authSecret.trim() || (client?.auth_secret_ref ? "stored-secret" : null);
+    const payload = buildDeliveryPayload({
+      email: SAMPLE_LEAD.email,
+      payload_json: SAMPLE_LEAD.payload_json,
+      webhook_url: webhookUrl || "https://example-crm.test/leads",
+      http_method: client?.http_method || "POST",
+      content_type: contentType,
+      field_mapping: { fields, constants: client?.field_mapping?.constants || {} },
+      custom_headers: client?.custom_headers || null,
+      auth_secret: effectiveSecret,
+    });
+    return redactedPayload(payload, effectiveSecret);
+  }, [mapping, authSecret, client, webhookUrl, contentType]);
+
+  const previewIsForm = contentType === "application/x-www-form-urlencoded";
+  const previewBodyIsEmpty = Object.keys(payloadPreview.body).length === 0;
+  const previewBody = previewBodyIsEmpty
+    ? "(empty body — add field mappings above to populate it)"
+    : previewIsForm
+      ? new URLSearchParams(payloadPreview.body).toString()
+      : JSON.stringify(payloadPreview.body, null, 2);
+  const previewHeaders = Object.entries(payloadPreview.headers)
+    .map(([name, value]) => `${name}: ${value}`)
+    .join("\n");
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -152,6 +234,21 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
           />
         </Row>
       ))}
+
+      <PreviewCard>
+        <PreviewTitle>Payload preview</PreviewTitle>
+        <PreviewMeta>
+          Sample lead: Jane Doe · jane@example.com · +33600000000
+        </PreviewMeta>
+        <PreviewBlock>{`${payloadPreview.method} ${payloadPreview.url}`}</PreviewBlock>
+        <PreviewBlock>{previewHeaders}</PreviewBlock>
+        <PreviewBlock>{previewBody}</PreviewBlock>
+        <PreviewHint>
+          {
+            "Header values may use {{secret}} to place the stored secret; otherwise it is sent as Authorization: Bearer <secret>."
+          }
+        </PreviewHint>
+      </PreviewCard>
 
       <Actions>
         <Button type="submit" disabled={isSaving}>

@@ -13,7 +13,17 @@ const Action = styled.button`
   margin-right: 1.2rem;
 `;
 
-export default function SimClientsTable({ clients, onEdit, onArchive }) {
+const NameCell = styled.td`
+  cursor: pointer;
+  color: var(--color-brand-600);
+  font-weight: 600;
+
+  &:hover {
+    background: var(--color-grey-50);
+  }
+`;
+
+export default function SimClientsTable({ clients, onEdit, onArchive, onOpen }) {
   if (!clients.length) return <p>No clients yet. Create one to get started.</p>;
   return (
     <Table>
@@ -29,7 +39,7 @@ export default function SimClientsTable({ clients, onEdit, onArchive }) {
       <tbody>
         {clients.map((c) => (
           <tr key={c.id}>
-            <td>{c.name}</td>
+            <NameCell onClick={() => onOpen?.(c)}>{c.name}</NameCell>
             <td>{c.webhook_url}</td>
             <td>{c.default_daily_volume}</td>
             <td>{c.send_window_start}–{c.send_window_end} ({c.timezone})</td>
