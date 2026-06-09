@@ -259,6 +259,12 @@ test/dev path must be unable to touch prod.
   Supabase stack (`supabase start`). A test bootstrap guard asserts the
   configured Supabase URL/ref is **not** `padrhwykbrioohogickg` and fails fast
   otherwise.
+- **The Docker-based local stack is the sandbox.** `supabase start` (requires
+  the Docker daemon running) brings up Postgres + pg_cron + pg_net + Vault +
+  Edge runtime + Storage in containers on localhost — fully isolated from prod.
+  All migrations, RPCs, the planner, and the `sim-drip-deliver` Edge Function
+  are exercised here. `pg_cron`, `pg_net`, and Vault must be **enabled in the
+  local config/migrations** (available but off by default locally).
 - **Schema work goes local-first.** Develop migrations with the Supabase CLI
   against the local stack; review before applying to prod. Do **not** use the
   Supabase MCP `apply_migration`/`execute_sql` to mutate prod for development
