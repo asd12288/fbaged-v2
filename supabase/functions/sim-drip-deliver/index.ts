@@ -1,6 +1,8 @@
 // Lead Sim delivery worker. Invoked by pg_cron (via pg_net) every minute, or by
 // admin "Run delivery now". Auth = x-sim-cron-secret header, validated in SQL by
 // sim_worker_claim. Honors global dry-run: builds + records payloads, sends nothing.
+// Live sends additionally require SIM_DRIP_LIVE_ALLOWED=true (or the prod project
+// ref in SUPABASE_URL); anywhere else dry-run is forced regardless of the DB toggle.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const CHUNK = 5;          // parallel sends per batch
@@ -29,9 +31,14 @@ export function buildDeliveryPayload(lead: ClaimedLead) {
   };
   const fields = lead.field_mapping?.fields ?? {};
   const constants = lead.field_mapping?.constants ?? {};
+  // Mapped keys resolve against canonical first, then fall back to the raw CSV
+  // row — so field_mapping can reference ANY CSV column, not just canonical.
+  const raw = (lead.payload_json?.raw ?? {}) as Record<string, unknown>;
   const body: Record<string, string> = {};
   for (const [canonicalKey, theirKey] of Object.entries(fields)) {
-    const value = canonical[canonicalKey];
+    const rawVal = raw[canonicalKey];
+    const value = canonical[canonicalKey] ??
+      (rawVal != null && String(rawVal) !== "" ? String(rawVal) : undefined);
     if (theirKey && value) body[theirKey] = value;
   }
   for (const [key, value] of Object.entries(constants)) {
@@ -66,16 +73,31 @@ function redactedPayload(p: ReturnType<typeof buildDeliveryPayload>, secret: str
   return { url: p.url, method: p.method, headers: safeHeaders, body: p.body };
 }
 
+// Record one outcome via sim_worker_record; surface (don't swallow) RPC errors.
+// Returns true on success, false on failure (logged for the function logs).
+async function recordResult(
+  admin: ReturnType<typeof createClient>,
+  leadId: string,
+  params: Record<string, unknown>,
+): Promise<boolean> {
+  const { error } = await admin.rpc("sim_worker_record", params);
+  if (error) {
+    console.error("sim_worker_record failed", leadId, error.message);
+    return false;
+  }
+  return true;
+}
+
 async function deliverOne(admin: ReturnType<typeof createClient>, secret: string, lead: ClaimedLead, dryRun: boolean) {
   const payload = buildDeliveryPayload(lead);
   const recorded = redactedPayload(payload, lead.auth_secret);
   if (dryRun) {
-    await admin.rpc("sim_worker_record", {
+    const recordOk = await recordResult(admin, lead.id, {
       p_secret: secret, p_lead_id: lead.id, p_success: true,
       p_response_status: null, p_response_body: "[dry-run] delivery simulated — no request sent",
       p_error: null, p_delivered_payload: recorded,
     });
-    return { id: lead.id, ok: true, dryRun: true };
+    return { id: lead.id, ok: true, dryRun: true, recordOk };
   }
   try {
     const controller = new AbortController();
@@ -86,19 +108,19 @@ async function deliverOne(admin: ReturnType<typeof createClient>, secret: string
     });
     clearTimeout(timer);
     const text = (await res.text()).slice(0, 2048);
-    await admin.rpc("sim_worker_record", {
+    const recordOk = await recordResult(admin, lead.id, {
       p_secret: secret, p_lead_id: lead.id, p_success: res.ok,
       p_response_status: res.status, p_response_body: text,
       p_error: res.ok ? null : `HTTP ${res.status}`, p_delivered_payload: recorded,
     });
-    return { id: lead.id, ok: res.ok, status: res.status };
+    return { id: lead.id, ok: res.ok, status: res.status, recordOk };
   } catch (err) {
-    await admin.rpc("sim_worker_record", {
+    const recordOk = await recordResult(admin, lead.id, {
       p_secret: secret, p_lead_id: lead.id, p_success: false,
       p_response_status: null, p_response_body: null,
       p_error: String(err).slice(0, 500), p_delivered_payload: recorded,
     });
-    return { id: lead.id, ok: false, error: String(err).slice(0, 200) };
+    return { id: lead.id, ok: false, error: String(err).slice(0, 200), recordOk };
   }
 }
 
@@ -118,15 +140,28 @@ Deno.serve(async (req) => {
     const status = /invalid worker secret/i.test(error.message) ? 401 : 500;
     return new Response(JSON.stringify({ error: error.message }), { status });
   }
-  const dryRun: boolean = Boolean(data?.dry_run);
+  // Double opt-in for live sends: the DB dry_run toggle must be off AND the
+  // environment must allow live (explicit env flag, or running against prod).
+  // Anything else (local stacks, previews) is forced into dry-run.
+  const liveAllowed = Deno.env.get("SIM_DRIP_LIVE_ALLOWED") === "true" ||
+    (Deno.env.get("SUPABASE_URL") ?? "").includes("padrhwykbrioohogickg");
+  const dbDryRun = Boolean(data?.dry_run);
+  const dryRun = dbDryRun || !liveAllowed;
   const leads: ClaimedLead[] = data?.leads ?? [];
-  const results: unknown[] = [];
+  const results: Awaited<ReturnType<typeof deliverOne>>[] = [];
   for (let i = 0; i < leads.length; i += CHUNK) {
     const chunk = leads.slice(i, i + CHUNK);
     results.push(...(await Promise.all(chunk.map((l) => deliverOne(admin, secret, l, dryRun)))));
   }
+  const recordFailures = results.filter((r) => !r.recordOk).length;
   return new Response(
-    JSON.stringify({ processed: leads.length, dry_run: dryRun, results }),
+    JSON.stringify({
+      processed: leads.length,
+      dry_run: dryRun,
+      forced_dry_run: !dbDryRun && dryRun,
+      record_failures: recordFailures,
+      results,
+    }),
     { headers: { "Content-Type": "application/json" } },
   );
 });

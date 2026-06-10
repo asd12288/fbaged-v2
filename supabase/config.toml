@@ -361,8 +361,11 @@ inspector_port = 8083
 # The Deno major version to use.
 deno_version = 2
 
-# [edge_runtime.secrets]
-# secret_key = "env(SECRET_VALUE)"
+# Secrets injected into locally served edge functions. SIM_DRIP_LIVE_ALLOWED gates
+# real Lead Sim webhook sends (sim-drip-deliver forces dry-run unless it is "true"
+# or SUPABASE_URL is prod). Leave it unset locally so local stacks can never send.
+[edge_runtime.secrets]
+SIM_DRIP_LIVE_ALLOWED = "env(SIM_DRIP_LIVE_ALLOWED)"
 
 [analytics]
 enabled = true
