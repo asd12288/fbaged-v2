@@ -140,11 +140,9 @@ Deno.serve(async (req) => {
     const status = /invalid worker secret/i.test(error.message) ? 401 : 500;
     return new Response(JSON.stringify({ error: error.message }), { status });
   }
-  // Double opt-in for live sends: the DB dry_run toggle must be off AND the
-  // environment must allow live (explicit env flag, or running against prod).
-  // Anything else (local stacks, previews) is forced into dry-run.
-  const liveAllowed = Deno.env.get("SIM_DRIP_LIVE_ALLOWED") === "true" ||
-    (Deno.env.get("SUPABASE_URL") ?? "").includes("padrhwykbrioohogickg");
+  // Live sends require the explicit SIM_DRIP_LIVE_ALLOWED=true env flag.
+  // Anything else (local stacks, previews, staging) is forced into dry-run.
+  const liveAllowed = Deno.env.get("SIM_DRIP_LIVE_ALLOWED") === "true";
   const dbDryRun = Boolean(data?.dry_run);
   const dryRun = dbDryRun || !liveAllowed;
   const leads: ClaimedLead[] = data?.leads ?? [];

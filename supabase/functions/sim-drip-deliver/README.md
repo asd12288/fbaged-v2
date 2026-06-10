@@ -13,9 +13,7 @@ in SQL against the Vault secret `sim_cron_secret` (missing header → 401; misma
 **Dry-run — double opt-in for live sends.** A real HTTP request is only sent when BOTH are true:
 
 1. the admin dry-run toggle is off (`sim_settings.dry_run = false`, flipped in the admin UI), AND
-2. the environment signals that live sends are allowed: the function secret
-   `SIM_DRIP_LIVE_ALLOWED` is `"true"`, or `SUPABASE_URL` contains the production project ref
-   (`padrhwykbrioohogickg`).
+2. the function secret `SIM_DRIP_LIVE_ALLOWED` is `"true"`.
 
 In every other case the worker forces dry-run: it builds the payload, records it (secret redacted
 as `•••`) and marks the lead `sent` with a `[dry-run]` response body — nothing leaves the
@@ -39,6 +37,6 @@ reaper in `sim_worker_claim` hands them back to the scheduler after 10 minutes (
 re-attempted), so check the function logs when the count is non-zero.
 
 **Prod deploy runbook:** `supabase functions deploy sim-drip-deliver --no-verify-jwt`, set the
-function secret `SIM_DRIP_LIVE_ALLOWED=true` (or rely on the prod `SUPABASE_URL` ref), then update
-the Vault secret `sim_function_url` to `https://<ref>.supabase.co/functions/v1/sim-drip-deliver`.
-`dry_run` stays TRUE until an admin explicitly flips it to live.
+function secret `SIM_DRIP_LIVE_ALLOWED=true`, then update the Vault secret `sim_function_url`
+to `https://<ref>.supabase.co/functions/v1/sim-drip-deliver`. `dry_run` stays TRUE until an
+admin explicitly flips it to live.

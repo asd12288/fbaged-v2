@@ -1,5 +1,5 @@
 // The live production Supabase project. Nothing under test/dev may target it.
-export const PROD_SUPABASE_REF = "padrhwykbrioohogickg";
+export const PROD_SUPABASE_REF = "padrhwykbrioohogickg"; // NOSONAR — intentional hardcoded guard, not a secret
 
 export function isProdSupabaseUrl(url) {
   if (!url) return false;
