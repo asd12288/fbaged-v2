@@ -15,8 +15,7 @@ export function normalizeFieldKey(value) {
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+/, "")
-    .replace(/_+$/, "");
+    .split("_").filter(Boolean).join("_");
 }
 
 export function buildAliasSet(values) {
