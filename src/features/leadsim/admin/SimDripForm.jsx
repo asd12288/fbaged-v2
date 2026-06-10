@@ -62,7 +62,13 @@ export default function SimDripForm({ client, onViewDrip }) {
       return;
     }
 
-    const parsed = await parseCsv(file);
+    let parsed;
+    try {
+      parsed = await parseCsv(file);
+    } catch {
+      toast.error("Could not parse CSV file");
+      return;
+    }
     if (!Array.isArray(parsed.data)) {
       toast.error("Could not parse CSV file");
       return;
@@ -96,7 +102,7 @@ export default function SimDripForm({ client, onViewDrip }) {
           validRows,
           duplicateRows,
           invalidRows: local.summary.invalidRows,
-          newCount: Math.max(validRows - duplicateRows, 0),
+          newCount: Math.max(validRows - (remote?.duplicate_count || 0), 0),
         },
         duplicateSamples: remote?.duplicate_samples || [],
       });
@@ -148,6 +154,7 @@ export default function SimDripForm({ client, onViewDrip }) {
         onNameChange={setDripName}
         dailyVolume={dailyVolume}
         onVolumeChange={setDailyVolume}
+        skipWeekends={Boolean(client.skip_weekends)}
         onConfirm={handleCreate}
         isCreating={isCreating}
         createResult={createResult}

@@ -61,10 +61,21 @@ export default function SimCsvDropzone({ file, onFile }) {
     inputRef.current?.click();
   }
 
+  function handleKeyDown(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openPicker();
+    }
+  }
+
   return (
     <Zone
       $active={active}
+      role={file ? undefined : "button"}
+      tabIndex={file ? undefined : 0}
+      aria-label={file ? undefined : "Upload CSV file"}
       onClick={file ? undefined : openPicker}
+      onKeyDown={file ? undefined : handleKeyDown}
       onDragOver={(e) => {
         e.preventDefault();
         setActive(true);

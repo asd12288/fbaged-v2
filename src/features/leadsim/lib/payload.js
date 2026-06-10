@@ -31,7 +31,11 @@ export function buildDeliveryPayload(lead) {
   const constants = lead.field_mapping?.constants ?? {};
   const body = {};
   for (const [canonicalKey, theirKey] of Object.entries(fields)) {
-    const value = canonical[canonicalKey];
+    let value = canonical[canonicalKey];
+    if (value == null || value === "") {
+      const rawValue = lead.payload_json?.raw?.[canonicalKey];
+      if (rawValue != null && String(rawValue) !== "") value = String(rawValue);
+    }
     if (theirKey && value) body[theirKey] = value;
   }
   for (const [key, value] of Object.entries(constants)) {

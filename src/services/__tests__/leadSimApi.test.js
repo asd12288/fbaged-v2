@@ -15,7 +15,6 @@ import {
   setSimDripStatus,
   updateSimDripPace,
   retrySimDripLead,
-  runSimPlanner,
   runSimDelivery,
   getSimSettings,
   setSimDryRun,
@@ -182,13 +181,6 @@ describe("leadSimApi", () => {
     const out = await retrySimDripLead({ leadId: "l1" });
     expect(rpc).toHaveBeenCalledWith("admin_sim_drip_retry_lead", { p_lead_id: "l1" });
     expect(out.status).toBe("scheduled");
-  });
-
-  it("runSimPlanner calls the planner RPC with no params", async () => {
-    rpc.mockResolvedValue({ data: { drips_planned: 1, leads_scheduled: 3 }, error: null });
-    const out = await runSimPlanner();
-    expect(rpc).toHaveBeenCalledWith("admin_sim_run_planner");
-    expect(out.leads_scheduled).toBe(3);
   });
 
   it("runSimDelivery calls the delivery RPC with no params", async () => {

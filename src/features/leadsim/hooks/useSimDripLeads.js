@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { listSimDripLeads } from "../../../services/leadSimApi";
 
-export function useSimDripLeads(dripId, { status = null } = {}) {
+export function useSimDripLeads(dripId, { status = null, offset = 0 } = {}) {
   const { data, isPending, error } = useQuery({
-    queryKey: ["sim-drip-leads", dripId, status],
-    queryFn: () => listSimDripLeads({ dripId, status }),
+    queryKey: ["sim-drip-leads", dripId, status, offset],
+    queryFn: () => listSimDripLeads({ dripId, status, offset }),
     enabled: !!dripId,
     refetchInterval: 4000,
   });

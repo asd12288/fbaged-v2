@@ -23,7 +23,7 @@ const NewButton = styled.button`
 
 export default function SimClientsPanel({ onOpenClient }) {
   const { clients, isPending, error } = useSimClients();
-  const { saveClient, isSaving, archiveClient } = useSimClientMutations();
+  const { saveClient, isSaving, archiveClient, isArchiving } = useSimClientMutations();
   const [editing, setEditing] = useState(null); // null=list, {}=new, {client}=edit
 
   if (isPending) return <p>Loading clients…</p>;
@@ -70,6 +70,7 @@ export default function SimClientsPanel({ onOpenClient }) {
         onEdit={(c) => setEditing(c)}
         onArchive={handleArchive}
         onOpen={onOpenClient}
+        isArchiving={isArchiving}
       />
     </>
   );

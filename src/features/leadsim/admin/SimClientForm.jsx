@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import toast from "react-hot-toast";
 import { buildDeliveryPayload, redactedPayload } from "../lib/payload";
 
 const CANONICAL_FIELDS = ["full_name", "email", "tel", "answer", "date", "campaign"];
@@ -144,14 +145,24 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    if (windowStart >= windowEnd) {
+      toast.error("Send window start must be before end");
+      return;
+    }
     const fields = Object.fromEntries(
       Object.entries(mapping).filter(([, v]) => v && v.trim())
     );
+    // Preserve mapping keys managed outside this form (non-canonical fields).
+    for (const [key, value] of Object.entries(client?.field_mapping?.fields || {})) {
+      if (!CANONICAL_FIELDS.includes(key)) fields[key] = value;
+    }
     onSave({
       id: client?.id || null,
       name,
       webhookUrl,
+      httpMethod: client?.http_method ?? "POST",
       contentType,
+      customHeaders: client?.custom_headers ?? {},
       timezone,
       sendWindowStart: windowStart,
       sendWindowEnd: windowEnd,
@@ -165,12 +176,18 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
   return (
     <Form onSubmit={handleSubmit}>
       <Row>
-        <Label>Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} required />
+        <Label htmlFor="sim-client-name">Name</Label>
+        <Input
+          id="sim-client-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
       </Row>
       <Row>
-        <Label>Webhook URL</Label>
+        <Label htmlFor="sim-client-webhook-url">Webhook URL</Label>
         <Input
+          id="sim-client-webhook-url"
           type="url"
           value={webhookUrl}
           onChange={(e) => setWebhookUrl(e.target.value)}
@@ -178,15 +195,20 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
         />
       </Row>
       <Row>
-        <Label>Content type</Label>
-        <select value={contentType} onChange={(e) => setContentType(e.target.value)}>
+        <Label htmlFor="sim-client-content-type">Content type</Label>
+        <select
+          id="sim-client-content-type"
+          value={contentType}
+          onChange={(e) => setContentType(e.target.value)}
+        >
           <option value="application/json">JSON</option>
           <option value="application/x-www-form-urlencoded">Form-encoded</option>
         </select>
       </Row>
       <Row>
-        <Label>Auth secret</Label>
+        <Label htmlFor="sim-client-auth-secret">Auth secret</Label>
         <Input
+          id="sim-client-auth-secret"
           type="password"
           placeholder={client?.auth_secret_ref ? "•••••• (leave blank to keep)" : "token"}
           value={authSecret}
@@ -194,8 +216,9 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
         />
       </Row>
       <Row>
-        <Label>Daily volume</Label>
+        <Label htmlFor="sim-client-daily-volume">Daily volume</Label>
         <Input
+          id="sim-client-daily-volume"
           type="number"
           min="1"
           value={dailyVolume}
@@ -203,31 +226,47 @@ export default function SimClientForm({ client, onSave, onCancel, isSaving }) {
         />
       </Row>
       <Row>
-        <Label>Timezone</Label>
-        <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+        <Label htmlFor="sim-client-timezone">Timezone</Label>
+        <Input
+          id="sim-client-timezone"
+          value={timezone}
+          onChange={(e) => setTimezone(e.target.value)}
+        />
       </Row>
       <Row>
-        <Label>Send window</Label>
+        <Label htmlFor="sim-client-window-start">Send window</Label>
         <div style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
-          <Input type="time" value={windowStart} onChange={(e) => setWindowStart(e.target.value)} />
-          <span>to</span>
-          <Input type="time" value={windowEnd} onChange={(e) => setWindowEnd(e.target.value)} />
+          <Input
+            id="sim-client-window-start"
+            type="time"
+            value={windowStart}
+            onChange={(e) => setWindowStart(e.target.value)}
+          />
+          <label htmlFor="sim-client-window-end">to</label>
+          <Input
+            id="sim-client-window-end"
+            type="time"
+            value={windowEnd}
+            onChange={(e) => setWindowEnd(e.target.value)}
+          />
         </div>
       </Row>
       <Row>
-        <Label>Skip weekends</Label>
+        <Label htmlFor="sim-client-skip-weekends">Skip weekends</Label>
         <input
+          id="sim-client-skip-weekends"
           type="checkbox"
           checked={skipWeekends}
           onChange={(e) => setSkipWeekends(e.target.checked)}
         />
       </Row>
 
-      <Label>Field mapping (our field → their CRM key)</Label>
+      <Label as="span">Field mapping (our field → their CRM key)</Label>
       {CANONICAL_FIELDS.map((field) => (
         <Row key={field}>
-          <Label>{field}</Label>
+          <Label htmlFor={`sim-client-map-${field}`}>{field}</Label>
           <Input
+            id={`sim-client-map-${field}`}
             placeholder={`their key for ${field}`}
             value={mapping[field]}
             onChange={(e) => setMapping((m) => ({ ...m, [field]: e.target.value }))}

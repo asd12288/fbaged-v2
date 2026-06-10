@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   retrySimDripLead,
   runSimDelivery,
-  runSimPlanner,
   setSimDripStatus,
   updateSimDripPace,
 } from "../../../services/leadSimApi";
@@ -19,7 +18,6 @@ export function useSimDripControls(dripId) {
   const pace = useMutation({ mutationFn: updateSimDripPace, onSuccess: invalidate });
   const retry = useMutation({ mutationFn: retrySimDripLead, onSuccess: invalidate });
   const delivery = useMutation({ mutationFn: () => runSimDelivery(), onSuccess: invalidate });
-  const planner = useMutation({ mutationFn: () => runSimPlanner(), onSuccess: invalidate });
 
   return {
     start: () => status.mutateAsync({ dripId, action: "start" }),
@@ -29,14 +27,9 @@ export function useSimDripControls(dripId) {
     setPace: (dailyVolume) => pace.mutateAsync({ dripId, dailyVolume }),
     retryLead: (leadId) => retry.mutateAsync({ leadId }),
     runDelivery: () => delivery.mutateAsync(),
-    runPlanner: () => planner.mutateAsync(),
     isChangingStatus: status.isPending,
     isSettingPace: pace.isPending,
     isRetrying: retry.isPending,
     isRunningDelivery: delivery.isPending,
-    isRunningPlanner: planner.isPending,
-    statusError: status.error,
-    paceError: pace.error,
-    retryError: retry.error,
   };
 }

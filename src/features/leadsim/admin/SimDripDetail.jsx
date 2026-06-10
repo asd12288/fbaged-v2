@@ -19,6 +19,8 @@ const LEAD_FILTERS = [
   { value: "failed", label: "Failed" },
 ];
 
+const LEADS_PAGE_SIZE = 100;
+
 const Wrap = styled.div`
   width: 100%;
   display: flex;
@@ -285,6 +287,17 @@ const Notice = styled.p`
   color: var(--color-grey-600);
 `;
 
+const PagerRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+`;
+
+const PagerLabel = styled.span`
+  font-size: 1.2rem;
+  color: var(--color-grey-500);
+`;
+
 const ErrorNotice = styled.p`
   margin: 0;
   font-size: 1.4rem;
@@ -320,12 +333,13 @@ function truncate(text, max = 48) {
 export default function SimDripDetail({ dripId, onBack }) {
   const { drip, client, counts, isPending, error } = useSimDrip(dripId);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [leadsOffset, setLeadsOffset] = useState(0);
   const {
     leads,
     total,
     isPending: isLoadingLeads,
     error: leadsError,
-  } = useSimDripLeads(dripId, { status: statusFilter });
+  } = useSimDripLeads(dripId, { status: statusFilter, offset: leadsOffset });
   const {
     start,
     pause,
@@ -554,7 +568,10 @@ export default function SimDripDetail({ dripId, onBack }) {
               key={filter.label}
               type="button"
               $active={statusFilter === filter.value}
-              onClick={() => setStatusFilter(filter.value)}
+              onClick={() => {
+                setStatusFilter(filter.value);
+                setLeadsOffset(0);
+              }}
             >
               {filter.label}
             </FilterChip>
@@ -576,74 +593,102 @@ export default function SimDripDetail({ dripId, onBack }) {
           {statusFilter ? ` with status “${statusFilter}”` : ""} for this drip.
         </Notice>
       ) : (
-        <TableWrapper>
-          <LeadsTable>
-            <thead>
-              <tr>
-                <HeadCell>Email</HeadCell>
-                <HeadCell>Status</HeadCell>
-                <HeadCell>Scheduled for</HeadCell>
-                <HeadCell>Sent at</HeadCell>
-                <HeadCell>Attempts</HeadCell>
-                <HeadCell>Response</HeadCell>
-                <HeadCell></HeadCell>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((lead) => {
-                const responseDetail = lead.error || lead.response_body;
-                return (
-                  <Tr key={lead.id}>
-                    <Td>{lead.email}</Td>
-                    <Td>
-                      <SimDripStatusBadge status={lead.status} />
-                    </Td>
-                    <Td>{formatInClientTz(lead.scheduled_at, client?.timezone)}</Td>
-                    <Td>{formatInClientTz(lead.sent_at, client?.timezone)}</Td>
-                    <Td>{lead.attempts}</Td>
-                    <Td>
-                      {lead.response_status != null || responseDetail ? (
-                        <ResponseText
-                          title={
-                            [lead.error, lead.response_body]
-                              .filter(Boolean)
-                              .join("\n") || undefined
-                          }
-                        >
-                          {lead.response_status != null
-                            ? `HTTP ${lead.response_status}`
-                            : null}
-                          {lead.response_status != null && responseDetail
-                            ? " · "
-                            : null}
-                          {truncate(responseDetail)}
-                        </ResponseText>
-                      ) : (
-                        "—"
-                      )}
-                    </Td>
-                    <Td>
-                      {lead.status === "failed" ? (
-                        <RetryButton
-                          type="button"
-                          disabled={isRetrying}
-                          onClick={() =>
-                            handleAction(
-                              () => retryLead(lead.id),
-                              "Lead requeued for delivery"
-                            )
-                          }
-                        >
-                          {isRetrying ? "Retrying…" : "Retry"}
-                        </RetryButton>
-                      ) : null}
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </tbody>
-          </LeadsTable>
-        </TableWrapper>
+        <>
+          <TableWrapper>
+            <LeadsTable>
+              <thead>
+                <tr>
+                  <HeadCell>Email</HeadCell>
+                  <HeadCell>Status</HeadCell>
+                  <HeadCell>Scheduled for</HeadCell>
+                  <HeadCell>Sent at</HeadCell>
+                  <HeadCell>Attempts</HeadCell>
+                  <HeadCell>Response</HeadCell>
+                  <HeadCell></HeadCell>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => {
+                  const responseDetail = lead.response_body || lead.error;
+                  return (
+                    <Tr key={lead.id}>
+                      <Td>{lead.email}</Td>
+                      <Td>
+                        <SimDripStatusBadge status={lead.status} />
+                      </Td>
+                      <Td>{formatInClientTz(lead.scheduled_at, client?.timezone)}</Td>
+                      <Td>{formatInClientTz(lead.sent_at, client?.timezone)}</Td>
+                      <Td>{lead.attempts}</Td>
+                      <Td>
+                        {lead.response_status != null || responseDetail ? (
+                          <ResponseText
+                            title={
+                              [lead.error, lead.response_body]
+                                .filter(Boolean)
+                                .join("\n") || undefined
+                            }
+                          >
+                            {lead.response_status != null
+                              ? `HTTP ${lead.response_status}`
+                              : null}
+                            {lead.response_status != null && responseDetail
+                              ? " · "
+                              : null}
+                            {truncate(responseDetail)}
+                          </ResponseText>
+                        ) : (
+                          "—"
+                        )}
+                      </Td>
+                      <Td>
+                        {lead.status === "failed" &&
+                        ["running", "paused"].includes(drip.status) ? (
+                          <RetryButton
+                            type="button"
+                            disabled={isRetrying}
+                            onClick={() =>
+                              handleAction(
+                                () => retryLead(lead.id),
+                                "Lead requeued for delivery"
+                              )
+                            }
+                          >
+                            {isRetrying ? "Retrying…" : "Retry"}
+                          </RetryButton>
+                        ) : null}
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </tbody>
+            </LeadsTable>
+          </TableWrapper>
+
+          {total > LEADS_PAGE_SIZE ? (
+            <PagerRow>
+              <GhostButton
+                type="button"
+                disabled={leadsOffset === 0}
+                onClick={() =>
+                  setLeadsOffset(Math.max(0, leadsOffset - LEADS_PAGE_SIZE))
+                }
+              >
+                ← Prev
+              </GhostButton>
+              <PagerLabel>
+                Showing {leadsOffset + 1}–{Math.min(leadsOffset + LEADS_PAGE_SIZE, total)}{" "}
+                of {total}
+              </PagerLabel>
+              <GhostButton
+                type="button"
+                disabled={leadsOffset + LEADS_PAGE_SIZE >= total}
+                onClick={() => setLeadsOffset(leadsOffset + LEADS_PAGE_SIZE)}
+              >
+                Next →
+              </GhostButton>
+            </PagerRow>
+          ) : null}
+        </>
       )}
     </Wrap>
   );

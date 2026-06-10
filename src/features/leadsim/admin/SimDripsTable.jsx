@@ -63,7 +63,7 @@ const NameButton = styled.button`
 `;
 
 export default function SimDripsTable({ clientId, onOpenDrip }) {
-  const { drips, isPending } = useSimDrips(clientId);
+  const { drips, isPending, error } = useSimDrips(clientId);
 
   if (!clientId) {
     return <Notice>Select a sim client to view its drips.</Notice>;
@@ -71,6 +71,10 @@ export default function SimDripsTable({ clientId, onOpenDrip }) {
 
   if (isPending) {
     return <Spinner />;
+  }
+
+  if (error) {
+    return <Notice>Could not load drips: {error.message}</Notice>;
   }
 
   if (!drips.length) {

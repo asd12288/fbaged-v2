@@ -130,12 +130,6 @@ export async function retrySimDripLead({ leadId }) {
   return data;
 }
 
-export async function runSimPlanner() {
-  const { data, error } = await supabase.rpc("admin_sim_run_planner");
-  if (error) throw new Error(error.message);
-  return data;
-}
-
 export async function runSimDelivery() {
   const { data, error } = await supabase.rpc("admin_sim_run_delivery");
   if (error) throw new Error(error.message);

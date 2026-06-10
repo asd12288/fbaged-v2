@@ -103,6 +103,7 @@ export default function SimDripPreviewCard({
   onNameChange,
   dailyVolume,
   onVolumeChange,
+  skipWeekends,
   onConfirm,
   isCreating,
   createResult,
@@ -117,6 +118,8 @@ export default function SimDripPreviewCard({
   const newCount = preview?.summary.newCount ?? 0;
   const samples = preview?.duplicateSamples || [];
   const days = estimateBusinessDays(newCount, dailyVolume);
+  const dayWord = days === 1 ? "day" : "days";
+  const dayLabel = skipWeekends ? `business ${dayWord}` : dayWord;
 
   return (
     <Card>
@@ -176,8 +179,7 @@ export default function SimDripPreviewCard({
               onChange={(e) => onVolumeChange(Math.max(1, Number(e.target.value) || 1))}
             />
             <Helper>
-              About {days} business {days === 1 ? "day" : "days"} to deliver {newCount} new
-              leads at this pace.
+              About {days} {dayLabel} to deliver {newCount} new leads at this pace.
             </Helper>
           </Field>
 

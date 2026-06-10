@@ -109,6 +109,48 @@ describe("buildDeliveryPayload", () => {
     const payload = buildDeliveryPayload(makeLead({ http_method: "" }));
     expect(payload.method).toBe("POST");
   });
+
+  it("falls back to raw values when the canonical value is missing", () => {
+    const payload = buildDeliveryPayload(
+      makeLead({
+        payload_json: {
+          canonical: { full_name: "Jane Doe" },
+          raw: { custom_question: "Are you over 25?" },
+        },
+        field_mapping: {
+          fields: { email: "Email", custom_question: "q1" },
+          constants: {},
+        },
+      })
+    );
+    expect(payload.body).toEqual({
+      Email: "jane@example.com",
+      q1: "Are you over 25?",
+    });
+  });
+
+  it("prefers canonical values over raw when both exist", () => {
+    const payload = buildDeliveryPayload(
+      makeLead({
+        payload_json: {
+          canonical: { full_name: "Jane Doe" },
+          raw: { full_name: "Raw Jane" },
+        },
+        field_mapping: { fields: { full_name: "Name" }, constants: {} },
+      })
+    );
+    expect(payload.body).toEqual({ Name: "Jane Doe" });
+  });
+
+  it("skips empty-string raw values", () => {
+    const payload = buildDeliveryPayload(
+      makeLead({
+        payload_json: { canonical: {}, raw: { custom_question: "" } },
+        field_mapping: { fields: { custom_question: "q1" }, constants: {} },
+      })
+    );
+    expect(payload.body).not.toHaveProperty("q1");
+  });
 });
 
 describe("redactedPayload", () => {
