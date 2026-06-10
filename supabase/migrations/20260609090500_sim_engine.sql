@@ -59,6 +59,21 @@ as $$
 $$;
 revoke all on function public.sim_invoke_delivery() from public, anon, authenticated;
 
+-- Mark a running drip 'completed' once no deliverable leads remain.
+create or replace function public.sim_check_drip_completion(p_drip_id uuid)
+returns void language plpgsql security definer set search_path = public
+as $$
+begin
+  if not exists (
+    select 1 from public.sim_drip_leads
+    where drip_id = p_drip_id and status in ('queued', 'scheduled', 'sending')
+  ) and (select status from public.sim_drips where id = p_drip_id) = 'running' then
+    update public.sim_drips set status = 'completed' where id = p_drip_id;
+  end if;
+end;
+$$;
+revoke all on function public.sim_check_drip_completion(uuid) from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- 2.3 Planner
 -- ---------------------------------------------------------------------------
@@ -85,6 +100,8 @@ declare
   v_need integer;
   v_picked integer;
 begin
+  -- Serialize planners: cron + admin/manual runs must not interleave.
+  perform pg_advisory_xact_lock(hashtext('sim_plan_drips')::bigint);
   for d in
     select dr.id, dr.daily_volume, c.timezone, c.send_window_start, c.send_window_end, c.skip_weekends
     from public.sim_drips dr
@@ -93,50 +110,58 @@ begin
       and (p_drip_id is null or dr.id = p_drip_id)
     order by dr.created_at
   loop
-    v_drips := v_drips + 1;
-    v_local_now := (now() at time zone d.timezone);
-    for v_day in 0..1 loop
-      v_local_date := (v_local_now)::date + v_day;
-      if d.skip_weekends and extract(isodow from v_local_date) in (6, 7) then
-        continue;
-      end if;
-      v_win_start := v_local_date + d.send_window_start;
-      v_win_end := v_local_date + d.send_window_end;
-      if v_day = 0 then
-        v_eff_start := greatest(v_win_start, v_local_now);
-      else
-        v_eff_start := v_win_start;
-      end if;
-      if v_eff_start >= v_win_end then
-        continue;
-      end if;
-      v_target := greatest(1, round(d.daily_volume * (0.8 + random() * 0.4))::integer);
-      select count(*) into v_already
-      from public.sim_drip_leads l
-      where l.drip_id = d.id
-        and l.status in ('scheduled', 'sending', 'sent', 'failed')
-        and ((l.scheduled_at at time zone d.timezone)::date) = v_local_date;
-      v_need := v_target - v_already;
-      if v_need <= 0 then
-        continue;
-      end if;
-      v_eff_start_ts := v_eff_start at time zone d.timezone;
-      v_span := v_win_end - v_eff_start;
-      update public.sim_drip_leads l
-      set status = 'scheduled',
-          scheduled_at = v_eff_start_ts + (pick.r * v_span)
-      from (
-        select id, random() as r
-        from public.sim_drip_leads
-        where drip_id = d.id and status = 'queued'
-        order by created_at, id
-        limit v_need
-        for update skip locked
-      ) pick
-      where l.id = pick.id;
-      get diagnostics v_picked = row_count;
-      v_total_scheduled := v_total_scheduled + v_picked;
-    end loop;
+    -- One bad drip/client (e.g. corrupted timezone) must not break planning
+    -- for the others: skip it with a warning and keep going.
+    begin
+      v_drips := v_drips + 1;
+      v_local_now := (now() at time zone d.timezone);
+      for v_day in 0..1 loop
+        v_local_date := (v_local_now)::date + v_day;
+        if d.skip_weekends and extract(isodow from v_local_date) in (6, 7) then
+          continue;
+        end if;
+        v_win_start := v_local_date + d.send_window_start;
+        v_win_end := v_local_date + d.send_window_end;
+        if v_day = 0 then
+          v_eff_start := greatest(v_win_start, v_local_now);
+        else
+          v_eff_start := v_win_start;
+        end if;
+        if v_eff_start >= v_win_end then
+          continue;
+        end if;
+        -- Deterministic per-(drip, local date) jitter so re-runs agree on the
+        -- same daily target instead of re-rolling random() each time.
+        v_target := greatest(1, round(d.daily_volume * (0.8 + (abs(hashtext(d.id::text || v_local_date::text)) % 1000) / 1000.0 * 0.4))::integer);
+        select count(*) into v_already
+        from public.sim_drip_leads l
+        where l.drip_id = d.id
+          and l.status in ('scheduled', 'sending', 'sent', 'failed')
+          and ((l.scheduled_at at time zone d.timezone)::date) = v_local_date;
+        v_need := v_target - v_already;
+        if v_need <= 0 then
+          continue;
+        end if;
+        v_eff_start_ts := v_eff_start at time zone d.timezone;
+        v_span := v_win_end - v_eff_start;
+        update public.sim_drip_leads l
+        set status = 'scheduled',
+            scheduled_at = v_eff_start_ts + (pick.r * v_span)
+        from (
+          select id, random() as r
+          from public.sim_drip_leads
+          where drip_id = d.id and status = 'queued'
+          order by created_at, id
+          limit v_need
+          for update skip locked
+        ) pick
+        where l.id = pick.id;
+        get diagnostics v_picked = row_count;
+        v_total_scheduled := v_total_scheduled + v_picked;
+      end loop;
+    exception when others then
+      raise warning 'sim_plan_drips: skipping drip % (%)', d.id, sqlerrm;
+    end;
   end loop;
   return jsonb_build_object('drips_planned', v_drips, 'leads_scheduled', v_total_scheduled);
 end;
@@ -162,6 +187,11 @@ begin
   if v_expected is null or p_secret is distinct from v_expected then
     raise exception 'Invalid worker secret';
   end if;
+  -- Reap stale claims: a worker that died mid-delivery leaves leads stuck in
+  -- 'sending'; after 10 minutes hand them back to the scheduler.
+  update public.sim_drip_leads
+  set status = 'scheduled', scheduled_at = now()
+  where status = 'sending' and last_attempt_at < now() - interval '10 minutes';
   select dry_run into v_dry from public.sim_settings where id;
   with claimed as (
     update public.sim_drip_leads l
@@ -278,12 +308,7 @@ begin
     end if;
   end if;
 
-  if not exists (
-    select 1 from public.sim_drip_leads
-    where drip_id = v_drip.id and status in ('queued', 'scheduled', 'sending')
-  ) and (select status from public.sim_drips where id = v_drip.id) = 'running' then
-    update public.sim_drips set status = 'completed' where id = v_drip.id;
-  end if;
+  perform public.sim_check_drip_completion(v_drip.id);
 
   return jsonb_build_object('lead_id', p_lead_id, 'drip_id', v_drip.id);
 end;
@@ -431,6 +456,12 @@ begin
     if v_drip.status <> 'draft' then
       raise exception 'Cannot start drip: status is %, expected draft', v_drip.status;
     end if;
+    if not exists (
+      select 1 from public.sim_drip_leads
+      where drip_id = p_drip_id and status in ('queued', 'scheduled')
+    ) then
+      raise exception 'Cannot start drip: it has no deliverable leads';
+    end if;
     update public.sim_drips
     set status = 'running',
         started_at = coalesce(started_at, now()),
@@ -438,7 +469,14 @@ begin
         consecutive_failures = 0
     where id = p_drip_id
     returning * into v_drip;
+    -- Re-queue the overdue backlog so the planner re-spreads it from now
+    -- instead of leaving stale past-due timestamps in place.
+    update public.sim_drip_leads
+    set status = 'queued', scheduled_at = null
+    where drip_id = p_drip_id and status = 'scheduled' and scheduled_at < now();
     perform public.sim_plan_drips(p_drip_id);
+    perform public.sim_check_drip_completion(p_drip_id);
+    select * into v_drip from public.sim_drips where id = p_drip_id;
   elsif p_action = 'resume' then
     if v_drip.status <> 'paused' then
       raise exception 'Cannot resume drip: status is %, expected paused', v_drip.status;
@@ -450,7 +488,14 @@ begin
         consecutive_failures = 0
     where id = p_drip_id
     returning * into v_drip;
+    -- Re-queue the overdue backlog so the planner re-spreads it from now
+    -- instead of leaving stale past-due timestamps in place.
+    update public.sim_drip_leads
+    set status = 'queued', scheduled_at = null
+    where drip_id = p_drip_id and status = 'scheduled' and scheduled_at < now();
     perform public.sim_plan_drips(p_drip_id);
+    perform public.sim_check_drip_completion(p_drip_id);
+    select * into v_drip from public.sim_drips where id = p_drip_id;
   elsif p_action = 'pause' then
     if v_drip.status <> 'running' then
       raise exception 'Cannot pause drip: status is %, expected running', v_drip.status;
@@ -524,6 +569,7 @@ set search_path = public
 as $$
 declare
   v_lead public.sim_drip_leads;
+  v_drip_status text;
 begin
   if not public.is_admin() then
     raise exception 'Access denied: admin only';
@@ -535,6 +581,11 @@ begin
   end if;
   if v_lead.status <> 'failed' then
     raise exception 'Cannot retry lead: status is %, expected failed', v_lead.status;
+  end if;
+
+  select status into v_drip_status from public.sim_drips where id = v_lead.drip_id;
+  if v_drip_status not in ('running', 'paused') then
+    raise exception 'Cannot retry: drip is %', v_drip_status;
   end if;
 
   update public.sim_drip_leads
@@ -643,3 +694,11 @@ grant execute on function public.admin_sim_set_dry_run(boolean) to authenticated
 
 select cron.schedule('sim-drip-planner', '7 * * * *', $$select public.sim_plan_drips();$$);
 select cron.schedule('sim-drip-deliver', '* * * * *', $$select public.sim_invoke_delivery();$$);
+
+-- ---------------------------------------------------------------------------
+-- 2.7 Lock down pg_net internals
+-- ---------------------------------------------------------------------------
+
+-- net.http_request_queue rows carry the cron secret in their headers; API
+-- roles must never be able to read (or touch) pg_net's tables.
+revoke all on all tables in schema net from public, anon, authenticated;

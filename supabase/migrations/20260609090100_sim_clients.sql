@@ -18,7 +18,8 @@ create table if not exists public.sim_clients (
   skip_weekends boolean not null default false,
   default_daily_volume integer not null default 25
     check (default_daily_volume > 0),
-  is_archived boolean not null default false
+  is_archived boolean not null default false,
+  constraint sim_clients_window_chk check (send_window_start < send_window_end)
 );
 
 create index if not exists idx_sim_clients_active

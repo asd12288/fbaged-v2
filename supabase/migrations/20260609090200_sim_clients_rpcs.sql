@@ -35,10 +35,45 @@ set search_path = public, vault
 as $$
 declare
   v_row public.sim_clients;
+  v_existing public.sim_clients;
   v_secret_ref uuid;
+  v_eff_timezone text;
+  v_eff_window_start time;
+  v_eff_window_end time;
+  v_eff_webhook_url text;
 begin
   if not public.is_admin() then
     raise exception 'Access denied: admin only';
+  end if;
+
+  -- Validate the EFFECTIVE values (for updates: the post-coalesce result).
+  if p_id is not null then
+    select * into v_existing from public.sim_clients where id = p_id;
+    if not found then
+      raise exception 'Client not found';
+    end if;
+    v_eff_timezone := coalesce(p_timezone, v_existing.timezone);
+    v_eff_window_start := coalesce(p_send_window_start, v_existing.send_window_start);
+    v_eff_window_end := coalesce(p_send_window_end, v_existing.send_window_end);
+  else
+    v_eff_timezone := coalesce(p_timezone, 'Europe/Paris');
+    v_eff_window_start := coalesce(p_send_window_start, '08:00');
+    v_eff_window_end := coalesce(p_send_window_end, '21:00');
+  end if;
+  v_eff_webhook_url := p_webhook_url;
+
+  begin
+    perform now() at time zone v_eff_timezone;
+  exception when others then
+    raise exception 'Invalid timezone: %', v_eff_timezone;
+  end;
+
+  if v_eff_window_start >= v_eff_window_end then
+    raise exception 'Send window start must be before end (midnight-crossing windows are not supported)';
+  end if;
+
+  if v_eff_webhook_url !~* '^https?://\S+$' then
+    raise exception 'Webhook URL must start with http:// or https://';
   end if;
 
   if p_id is null then
@@ -112,6 +147,12 @@ as $$
 begin
   if not public.is_admin() then
     raise exception 'Access denied: admin only';
+  end if;
+  if exists (
+    select 1 from public.sim_drips
+    where client_id = p_id and status in ('draft', 'running', 'paused')
+  ) then
+    raise exception 'Cannot archive client: it still has active drips (cancel them first)';
   end if;
   update public.sim_clients set is_archived = true where id = p_id;
 end;
