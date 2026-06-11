@@ -6,6 +6,7 @@ import BudgetAdminLayout from "../features/admin/BudgetAdminLayout";
 import AccountAdminLayout from "../features/admin/AccountAdminLayout";
 import UsersAdminLayout from "../features/users/UsersAdminLayout";
 import AdminLeadsImportLayout from "../features/leads/admin/AdminLeadsImportLayout";
+import LeadSimLayout from "../features/leadsim/admin/LeadSimLayout";
 import { useUser } from "../features/auth/useUser";
 import AdminControls from "../features/admin/AdminControls";
 import { useOptionalAdminScope } from "../features/admin/AdminScopeContext";
@@ -102,6 +103,12 @@ function AdminDashboardInner() {
           >
             Leads
           </Tab>
+          <Tab
+            $active={activeTab === "leadsim"}
+            onClick={() => setActiveTab("leadsim")}
+          >
+            Lead Sim
+          </Tab>
         </TabContainer>
 
         {activeTab === "campaigns" && selectedUserId && (
@@ -111,6 +118,7 @@ function AdminDashboardInner() {
         {activeTab === "accounts" && selectedUserId && <AccountAdminLayout />}
         {activeTab === "users" && <UsersAdminLayout />}
         {activeTab === "leads" && <AdminLeadsImportLayout />}
+        {activeTab === "leadsim" && <LeadSimLayout />}
       </AdminContainer>
     </>
   );
